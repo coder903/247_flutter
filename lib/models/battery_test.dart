@@ -1,10 +1,12 @@
+// lib/models/battery_test.dart
+
 import 'base_model.dart';
 import '../config/constants.dart';
 
 class BatteryTest extends BaseModel {
   final int inspectionId;
   final String? barcode;
-  final String? position; // B1, B2, etc.
+  final String position; // B1, B2, etc.
   final String? serialNumber;
   final double ratedAmpHours;
   final double? voltageReading;
@@ -22,14 +24,14 @@ class BatteryTest extends BaseModel {
     super.serverId,
     required this.inspectionId,
     this.barcode,
-    this.position,
+    required this.position,
     this.serialNumber,
     required this.ratedAmpHours,
     this.voltageReading,
     required this.currentReading,
     this.temperatureF,
-    double? minCurrentRequired,
-    bool? passed,
+    this.minCurrentRequired,
+    this.passed,
     this.panelConnection,
     this.notes,
     this.photoPath,
@@ -38,27 +40,22 @@ class BatteryTest extends BaseModel {
     super.updatedAt,
     super.syncStatus,
     super.deleted,
-  })  : minCurrentRequired = minCurrentRequired ?? (ratedAmpHours * AppConstants.batteryPassThreshold),
-        passed = passed ?? (currentReading >= (minCurrentRequired ?? (ratedAmpHours * AppConstants.batteryPassThreshold)));
+  });
 
   /// Create BatteryTest from SQLite map
   factory BatteryTest.fromMap(Map<String, dynamic> map) {
-    final ratedAmpHours = map['rated_amp_hours'] as double;
-    final currentReading = map['current_reading'] as double;
-    final minCurrentRequired = map['min_current_required'] as double?;
-    
     return BatteryTest(
       id: map['id'] as int?,
       serverId: map['server_id'] as int?,
       inspectionId: map['inspection_id'] as int,
       barcode: map['barcode'] as String?,
-      position: map['position'] as String?,
+      position: map['position'] as String,
       serialNumber: map['serial_number'] as String?,
-      ratedAmpHours: ratedAmpHours,
+      ratedAmpHours: map['rated_amp_hours'] as double,
       voltageReading: map['voltage_reading'] as double?,
-      currentReading: currentReading,
+      currentReading: map['current_reading'] as double,
       temperatureF: map['temperature_f'] as double?,
-      minCurrentRequired: minCurrentRequired,
+      minCurrentRequired: map['min_current_required'] as double?,
       passed: map['passed'] == null ? null : map['passed'] == 1,
       panelConnection: map['panel_connection'] as String?,
       notes: map['notes'] as String?,
@@ -144,38 +141,30 @@ class BatteryTest extends BaseModel {
     );
   }
 
-  /// Recalculate pass/fail based on current values
+  /// Recalculate pass/fail based on 85% rule
   BatteryTest recalculate() {
-    final newMinRequired = ratedAmpHours * AppConstants.batteryPassThreshold;
-    final newPassed = currentReading >= newMinRequired;
+    final minRequired = ratedAmpHours * AppConstants.batteryPassThreshold;
+    final isPassed = currentReading >= minRequired;
     
     return copyWith(
-      minCurrentRequired: newMinRequired,
-      passed: newPassed,
+      minCurrentRequired: minRequired,
+      passed: isPassed,
     );
   }
+
+  /// Check if battery is high temperature
+  bool get isHighTemperature => temperatureF != null && temperatureF! > 95;
 
   /// Get percentage of rated capacity
   double get percentageOfRated => (currentReading / ratedAmpHours) * 100;
 
-  /// Get display text for position
-  String get displayPosition => position ?? 'Unknown';
+  /// Get display text for panel connection
+  String get displayPanelConnection => panelConnection ?? 'Main Panel';
 
-  /// Get pass/fail text
-  String get passFailText => passed == true ? 'PASS' : 'FAIL';
-
-  /// Check if temperature is high
-  bool get isHighTemperature => temperatureF != null && temperatureF! > 95;
-
-  /// Get formatted readings
-  String get formattedReadings {
-    return '${currentReading.toStringAsFixed(2)} / ${minCurrentRequired?.toStringAsFixed(2) ?? 'N/A'} Ah';
-  }
-
-  /// Check if has media (photo or video)
+  /// Check if has media
   bool get hasMedia => (photoPath != null && photoPath!.isNotEmpty) || 
                        (videoPath != null && videoPath!.isNotEmpty);
 
   @override
-  String toString() => 'BatteryTest(position: $position, passed: $passed)';
+  String toString() => 'BatteryTest($position: ${passed! ? "PASS" : "FAIL"})';
 }

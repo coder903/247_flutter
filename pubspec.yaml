@@ -51,6 +51,9 @@ dependencies:
   # Permission handling
   permission_handler: ^11.1.0
 
+  # Image processing
+  image: ^4.0.17
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

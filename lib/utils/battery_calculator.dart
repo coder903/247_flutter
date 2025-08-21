@@ -1,3 +1,5 @@
+// lib/utils/battery_calculator.dart
+
 import 'package:flutter/material.dart';
 import '../config/constants.dart';
 

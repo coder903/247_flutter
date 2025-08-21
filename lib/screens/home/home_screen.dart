@@ -1,6 +1,9 @@
+// lib/screens/home/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/auth_service.dart';
+import '../inspections/property_selection_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -53,9 +56,11 @@ class HomeScreen extends StatelessWidget {
             Icons.checklist,
             Colors.green,
             () {
-              // TODO: Navigate to Inspection
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Inspection - Coming Soon')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PropertySelectionScreen(),
+                ),
               );
             },
           ),

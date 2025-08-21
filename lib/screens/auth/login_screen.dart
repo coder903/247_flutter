@@ -1,6 +1,9 @@
+// lib/screens/auth/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';  // Fixed import path
+import '../../services/auth_service.dart';
+import '../../utils/add_test_data.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -144,6 +147,49 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             )
                           : const Text('Sign In'),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Test data button (for development)
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                        
+                        try {
+                          await TestDataGenerator.addTestData();
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Test data added successfully!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (e) {
+                          if (!mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error adding test data: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.science),
+                      label: const Text('Generate Test Data'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.grey[600],
+                      ),
                     ),
                   ),
                 ],
