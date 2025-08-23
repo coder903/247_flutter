@@ -1,141 +1,78 @@
 // lib/repositories/base_repository.dart
-
-import 'dart:convert';
+import 'package:sqflite/sqflite.dart';
 import '../database/database_helper.dart';
+import '../services/sync_manager.dart';
 import '../models/base_model.dart';
-import '../models/sync_queue.dart';
 
-/// Base repository class that provides common database operations
 abstract class BaseRepository<T extends BaseModel> {
-  final DatabaseHelper _db = DatabaseHelper.instance;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final SyncManager _syncManager = SyncManager.instance;
   
-  /// Table name for this repository
   String get tableName;
-  
-  /// Create model instance from map
   T fromMap(Map<String, dynamic> map);
   
-  /// Convert model to map
-  Map<String, dynamic> toMap(T model);
-  
-  /// Insert a new record
+  /// Insert new record
   Future<T> insert(T model) async {
-    final db = await _db.database;
+    final db = await _dbHelper.database;
     
-    // Insert the record
-    final map = toMap(model);
-    final id = await db.insert(tableName, map);
-    
-    // Add to sync queue if not from server
-    if (model.serverId == null) {
-      await _addToSyncQueue('CREATE', id, map);
-    }
-    
-    // Return model with ID
-    map['id'] = id;
-    return fromMap(map);
-  }
-  
-  /// Get a single record by ID
-  Future<T?> getById(int id) async {
-    final db = await _db.database;
-    final maps = await db.query(
+    // Insert into database
+    final id = await db.insert(
       tableName,
-      where: 'id = ? AND deleted = 0',
-      whereArgs: [id],
-      limit: 1,
+      model.toMap()..['sync_status'] = 'pending',
     );
     
-    if (maps.isEmpty) return null;
-    return fromMap(maps.first);
-  }
-  
-  /// Get a single record by server ID
-  Future<T?> getByServerId(int serverId) async {
-    final db = await _db.database;
-    final maps = await db.query(
-      tableName,
-      where: 'server_id = ? AND deleted = 0',
-      whereArgs: [serverId],
-      limit: 1,
+    // Create model with ID
+    final newModel = fromMap({
+      ...model.toMap(),
+      'id': id,
+      'sync_status': 'pending',
+    });
+    
+    // Queue for sync
+    await _syncManager.queueLocalChange(
+      operationType: 'CREATE',
+      tableName: tableName,
+      recordId: id,
+      recordData: {...newModel.toMap(), 'local_id': id},
+      priority: _getPriority(tableName),
     );
     
-    if (maps.isEmpty) return null;
-    return fromMap(maps.first);
+    return newModel;
   }
   
-  /// Get all records
-  Future<List<T>> getAll({String? orderBy}) async {
-    final db = await _db.database;
-    final maps = await db.query(
-      tableName,
-      where: 'deleted = 0',
-      orderBy: orderBy ?? 'created_at DESC',
-    );
-    
-    return maps.map((map) => fromMap(map)).toList();
-  }
-  
-  /// Get records with custom query
-  Future<List<T>> query({
-    String? where,
-    List<dynamic>? whereArgs,
-    String? orderBy,
-    int? limit,
-    int? offset,
-  }) async {
-    final db = await _db.database;
-    
-    // Add deleted check to where clause
-    final whereClause = where != null 
-        ? 'deleted = 0 AND ($where)'
-        : 'deleted = 0';
-    
-    final maps = await db.query(
-      tableName,
-      where: whereClause,
-      whereArgs: whereArgs,
-      orderBy: orderBy,
-      limit: limit,
-      offset: offset,
-    );
-    
-    return maps.map((map) => fromMap(map)).toList();
-  }
-  
-  /// Update a record
+  /// Update existing record
   Future<T> update(T model) async {
     if (model.id == null) {
       throw ArgumentError('Cannot update model without ID');
     }
     
-    final db = await _db.database;
-    final map = toMap(model);
+    final db = await _dbHelper.database;
     
-    // Update the timestamp
-    map['updated_at'] = DateTime.now().toIso8601String();
-    
-    // If not synced yet, keep as pending, otherwise mark as modified
-    if (model.syncStatus == 'synced') {
-      map['sync_status'] = 'modified';
-    }
-    
+    // Update in database
     await db.update(
       tableName,
-      map,
+      model.toMap()
+        ..['sync_status'] = 'pending'
+        ..['updated_at'] = DateTime.now().toIso8601String(),
       where: 'id = ?',
       whereArgs: [model.id],
     );
     
-    // Add to sync queue
-    await _addToSyncQueue('UPDATE', model.id!, map);
+    // Queue for sync
+    await _syncManager.queueLocalChange(
+      operationType: 'UPDATE',
+      tableName: tableName,
+      recordId: model.id!,
+      recordData: model.toMap(),
+      priority: _getPriority(tableName),
+    );
     
-    return fromMap(map);
+    return model;
   }
   
-  /// Soft delete a record
+  /// Soft delete record
   Future<void> delete(int id) async {
-    final db = await _db.database;
+    final db = await _dbHelper.database;
     
     // Soft delete
     await db.update(
@@ -149,16 +86,169 @@ abstract class BaseRepository<T extends BaseModel> {
       whereArgs: [id],
     );
     
-    // Add to sync queue
-    await _addToSyncQueue('DELETE', id, null);
+    // Queue for sync
+    await _syncManager.queueLocalChange(
+      operationType: 'DELETE',
+      tableName: tableName,
+      recordId: id,
+      priority: _getPriority(tableName),
+    );
   }
   
-  /// Count records
-  Future<int> count({String? where, List<dynamic>? whereArgs}) async {
-    final db = await _db.database;
+  /// Get record by ID
+  Future<T?> getById(int id) async {
+    final db = await _dbHelper.database;
+    final maps = await db.query(
+      tableName,
+      where: 'id = ? AND deleted = 0',
+      whereArgs: [id],
+      limit: 1,
+    );
     
+    if (maps.isEmpty) return null;
+    return fromMap(maps.first);
+  }
+  
+  /// Get all records
+  Future<List<T>> getAll() async {
+    final db = await _dbHelper.database;
+    final maps = await db.query(
+      tableName,
+      where: 'deleted = 0',
+      orderBy: 'created_at DESC',
+    );
+    
+    return maps.map((map) => fromMap(map)).toList();
+  }
+  
+  /// Query with conditions
+  Future<List<T>> query({
+    String? where,
+    List<dynamic>? whereArgs,
+    String? orderBy,
+    int? limit,
+  }) async {
+    final db = await _dbHelper.database;
+    
+    // Always exclude deleted records
     final whereClause = where != null 
-        ? 'deleted = 0 AND ($where)'
+        ? '($where) AND deleted = 0'
+        : 'deleted = 0';
+    
+    final maps = await db.query(
+      tableName,
+      where: whereClause,
+      whereArgs: whereArgs,
+      orderBy: orderBy,
+      limit: limit,
+    );
+    
+    return maps.map((map) => fromMap(map)).toList();
+  }
+  
+  /// Execute raw query
+  Future<List<Map<String, dynamic>>> rawQuery(
+    String sql, [
+    List<dynamic>? arguments,
+  ]) async {
+    final db = await _dbHelper.database;
+    return await db.rawQuery(sql, arguments);
+  }
+  
+  /// Get sync priority based on table
+  int _getPriority(String tableName) {
+    // Higher priority for critical data
+    switch (tableName) {
+      case 'inspections':
+      case 'battery_tests':
+      case 'component_tests':
+        return 10; // Highest priority
+      case 'service_tickets':
+        return 8;
+      case 'devices':
+      case 'properties':
+        return 6;
+      case 'buildings':
+      case 'customers':
+        return 4;
+      default:
+        return 5;
+    }
+  }
+  
+  /// Batch insert with sync
+  Future<List<T>> batchInsert(List<T> models) async {
+    final db = await _dbHelper.database;
+    final batch = db.batch();
+    final results = <T>[];
+    
+    for (final model in models) {
+      batch.insert(
+        tableName,
+        model.toMap()..['sync_status'] = 'pending',
+      );
+    }
+    
+    final ids = await batch.commit();
+    
+    // Create models with IDs and queue for sync
+    for (int i = 0; i < models.length; i++) {
+      final id = ids[i] as int;
+      final newModel = fromMap({
+        ...models[i].toMap(),
+        'id': id,
+        'sync_status': 'pending',
+      });
+      
+      results.add(newModel);
+      
+      // Queue for sync
+      await _syncManager.queueLocalChange(
+        operationType: 'CREATE',
+        tableName: tableName,
+        recordId: id,
+        recordData: {...newModel.toMap(), 'local_id': id},
+        priority: _getPriority(tableName),
+      );
+    }
+    
+    return results;
+  }
+  
+  /// Get records pending sync
+  Future<List<T>> getPendingSync() async {
+    return query(
+      where: 'sync_status = ?',
+      whereArgs: ['pending'],
+    );
+  }
+  
+  /// Mark record as synced
+  Future<void> markSynced(int id, {int? serverId}) async {
+    final db = await _dbHelper.database;
+    final updates = <String, dynamic>{
+      'sync_status': 'synced',
+    };
+    
+    if (serverId != null) {
+      updates['server_id'] = serverId;
+    }
+    
+    await db.update(
+      tableName,
+      updates,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  
+  /// Get count of records
+  Future<int> getCount({String? where, List<dynamic>? whereArgs}) async {
+    final db = await _dbHelper.database;
+    
+    // Always exclude deleted records
+    final whereClause = where != null 
+        ? '($where) AND deleted = 0'
         : 'deleted = 0';
     
     final result = await db.rawQuery(
@@ -166,77 +256,87 @@ abstract class BaseRepository<T extends BaseModel> {
       whereArgs,
     );
     
-    return result.first['count'] as int;
+    return Sqflite.firstIntValue(result) ?? 0;
   }
   
-  /// Get records that need syncing
-  Future<List<T>> getPendingSync() async {
-    return query(
-      where: "sync_status IN ('pending', 'modified')",
-      orderBy: 'updated_at ASC',
-    );
-  }
-  
-  /// Mark record as synced
-  Future<void> markSynced(int id, int serverId) async {
-    final db = await _db.database;
-    await db.update(
-      tableName,
-      {
-        'server_id': serverId,
-        'sync_status': 'synced',
-      },
+  /// Check if record exists
+  Future<bool> exists(int id) async {
+    final count = await getCount(
       where: 'id = ?',
       whereArgs: [id],
     );
+    return count > 0;
   }
   
-  /// Add operation to sync queue
-  Future<void> _addToSyncQueue(String operation, int recordId, Map<String, dynamic>? data) async {
-    final db = await _db.database;
+  /// Delete multiple records
+  Future<void> deleteMultiple(List<int> ids) async {
+    if (ids.isEmpty) return;
     
-    // Check if already in queue for this record
-    final existing = await db.query(
-      'sync_queue',
-      where: 'table_name = ? AND record_id = ? AND sync_status = ?',
-      whereArgs: [tableName, recordId, 'pending'],
-      limit: 1,
-    );
+    final db = await _dbHelper.database;
+    final batch = db.batch();
     
-    if (existing.isNotEmpty) {
-      // Update existing queue entry
-      await db.update(
-        'sync_queue',
+    for (final id in ids) {
+      batch.update(
+        tableName,
         {
-          'operation_type': operation,
-          'record_data': data != null ? jsonEncode(data) : null,
-          'created_at': DateTime.now().toIso8601String(),
+          'deleted': 1,
+          'sync_status': 'pending',
+          'updated_at': DateTime.now().toIso8601String(),
         },
         where: 'id = ?',
-        whereArgs: [existing.first['id']],
+        whereArgs: [id],
       );
-    } else {
-      // Create new queue entry
-      final syncQueue = SyncQueue(
-        operationType: operation,
+    }
+    
+    await batch.commit();
+    
+    // Queue all deletes for sync
+    for (final id in ids) {
+      await _syncManager.queueLocalChange(
+        operationType: 'DELETE',
         tableName: tableName,
-        recordId: recordId,
-        recordData: data != null ? jsonEncode(data) : null,
+        recordId: id,
+        priority: _getPriority(tableName),
       );
-      
-      await db.insert('sync_queue', syncQueue.toMap());
     }
   }
   
-  /// Execute raw query
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<dynamic>? arguments]) async {
-    final db = await _db.database;
-    return db.rawQuery(sql, arguments);
-  }
-  
-  /// Execute in transaction
-  Future<T> transaction<T>(Future<T> Function() action) async {
-    final db = await _db.database;
-    return db.transaction((_) => action());
+  /// Update multiple records
+  Future<void> updateMultiple(
+    Map<String, dynamic> values,
+    List<int> ids,
+  ) async {
+    if (ids.isEmpty) return;
+    
+    final db = await _dbHelper.database;
+    final batch = db.batch();
+    
+    final updateValues = {
+      ...values,
+      'sync_status': 'pending',
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    
+    for (final id in ids) {
+      batch.update(
+        tableName,
+        updateValues,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+    
+    await batch.commit();
+    
+    // Queue all updates for sync
+    for (final id in ids) {
+      await _syncManager.queueLocalChange(
+        operationType: 'UPDATE',
+        tableName: tableName,
+        recordId: id,
+        recordData: updateValues,
+        priority: _getPriority(tableName),
+      );
+    }
   }
 }

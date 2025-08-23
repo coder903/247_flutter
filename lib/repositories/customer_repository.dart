@@ -110,7 +110,7 @@ class CustomerRepository extends BaseRepository<Customer> {
       whereArgs.add(excludeId);
     }
     
-    final count = await this.count(where: where, whereArgs: whereArgs);
+    final count = await this.getCount(where: where, whereArgs: whereArgs);
     return count > 0;
   }
   

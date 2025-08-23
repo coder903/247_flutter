@@ -39,7 +39,7 @@ class DeviceRepository extends BaseRepository<Device> {
       whereArgs.add(excludeId);
     }
     
-    final count = await this.count(where: where, whereArgs: whereArgs);
+    final count = await this.getCount(where: where, whereArgs: whereArgs);
     return count > 0;
   }
   
@@ -50,6 +50,12 @@ class DeviceRepository extends BaseRepository<Device> {
       whereArgs: [propertyId],
       orderBy: 'location_description ASC, barcode ASC',
     );
+  }
+
+  /// Get device with all its details
+  Future<Map<String, dynamic>?> getWithDetails(int deviceId) async {
+    final devices = await getDevicesWithDetails(deviceId: deviceId);
+    return devices.isEmpty ? null : devices.first;
   }
   
   /// Get devices by type
@@ -87,7 +93,12 @@ class DeviceRepository extends BaseRepository<Device> {
   }
   
   /// Get devices with full details
-  Future<List<Map<String, dynamic>>> getDevicesWithDetails({int? propertyId}) async {
+  Future<List<Map<String, dynamic>>> getDevicesWithDetails({
+    int? propertyId,
+    int? deviceId,  // Add this parameter
+    String? deviceType,
+    String? category,
+  }) async {
     String sql = '''
       SELECT 
         d.*,
@@ -95,13 +106,13 @@ class DeviceRepository extends BaseRepository<Device> {
         dc.category_name,
         m.manufacturer_name,
         ds.subtype_name,
-        p.name as property_name
+        dch.characteristic_name
       FROM devices d
       LEFT JOIN device_types dt ON d.device_type_id = dt.id
       LEFT JOIN device_categories dc ON dt.category_id = dc.id
       LEFT JOIN manufacturers m ON d.manufacturer_id = m.id
       LEFT JOIN device_subtypes ds ON d.subtype_id = ds.id
-      LEFT JOIN properties p ON d.property_id = p.id
+      LEFT JOIN device_characteristics dch ON d.characteristic_id = dch.id
       WHERE d.deleted = 0
     ''';
     
@@ -112,7 +123,22 @@ class DeviceRepository extends BaseRepository<Device> {
       args.add(propertyId);
     }
     
-    sql += ' ORDER BY d.location_description ASC';
+    if (deviceId != null) {
+      sql += ' AND d.id = ?';
+      args.add(deviceId);
+    }
+    
+    if (deviceType != null) {
+      sql += ' AND dt.device_type_name = ?';
+      args.add(deviceType);
+    }
+    
+    if (category != null) {
+      sql += ' AND dc.category_name = ?';
+      args.add(category);
+    }
+    
+    sql += ' ORDER BY dc.category_name, dt.device_type_name, d.location_description';
     
     return rawQuery(sql, args);
   }
@@ -233,3 +259,4 @@ class DeviceRepository extends BaseRepository<Device> {
     return results.first;
   }
 }
+

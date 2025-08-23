@@ -1,3 +1,5 @@
+// lib/models/inspection.dart
+
 import 'base_model.dart';
 
 class Inspection extends BaseModel {
@@ -11,6 +13,17 @@ class Inspection extends BaseModel {
   final String? defects;
   final bool isComplete;
   final double? panelTemperatureF;
+  
+  // Additional fields for the summary screen
+  final String? notes;
+  final String? overallResult;  // 'Pass' or 'Fail'
+  final String? status;  // 'In Progress', 'Completed'
+  
+  // Statistics fields
+  final int? batteryCount;
+  final int? batteryPassed;
+  final int? componentCount;
+  final int? componentPassed;
 
   Inspection({
     super.id,
@@ -25,11 +38,27 @@ class Inspection extends BaseModel {
     this.defects,
     this.isComplete = false,
     this.panelTemperatureF,
+    this.notes,
+    this.overallResult,
+    this.status,
+    this.batteryCount,
+    this.batteryPassed,
+    this.componentCount,
+    this.componentPassed,
     super.createdAt,
     super.updatedAt,
     super.syncStatus,
     super.deleted,
   });
+
+  /// Getter for inspectorId (alias for backwards compatibility)
+  int? get inspectorId => inspectorUserId;
+
+  /// Get if inspection passed (convenience getter)
+  bool? get passed => overallResult == 'Pass' ? true : overallResult == 'Fail' ? false : null;
+  
+  /// Get completed at (alias for completionDatetime)
+  DateTime? get completedAt => completionDatetime;
 
   /// Create Inspection from SQLite map
   factory Inspection.fromMap(Map<String, dynamic> map) {
@@ -46,6 +75,13 @@ class Inspection extends BaseModel {
       defects: map['defects'] as String?,
       isComplete: map['is_complete'] == 1,
       panelTemperatureF: map['panel_temperature_f'] as double?,
+      notes: map['notes'] as String?,
+      overallResult: map['overall_result'] as String?,
+      status: map['status'] as String?,
+      batteryCount: map['battery_count'] as int?,
+      batteryPassed: map['battery_passed'] as int?,
+      componentCount: map['component_count'] as int?,
+      componentPassed: map['component_passed'] as int?,
       createdAt: BaseModel.parseDateTime(map['created_at'] as String?),
       updatedAt: BaseModel.parseDateTime(map['updated_at'] as String?),
       syncStatus: map['sync_status'] as String? ?? 'pending',
@@ -68,6 +104,13 @@ class Inspection extends BaseModel {
       'defects': defects,
       'is_complete': isComplete ? 1 : 0,
       'panel_temperature_f': panelTemperatureF,
+      'notes': notes,
+      'overall_result': overallResult,
+      'status': status,
+      'battery_count': batteryCount,
+      'battery_passed': batteryPassed,
+      'component_count': componentCount,
+      'component_passed': componentPassed,
       'created_at': BaseModel.formatDateTime(createdAt),
       'updated_at': BaseModel.formatDateTime(updatedAt),
       'sync_status': syncStatus,
@@ -89,6 +132,13 @@ class Inspection extends BaseModel {
     String? defects,
     bool? isComplete,
     double? panelTemperatureF,
+    String? notes,
+    String? overallResult,
+    String? status,
+    int? batteryCount,
+    int? batteryPassed,
+    int? componentCount,
+    int? componentPassed,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncStatus,
@@ -107,6 +157,13 @@ class Inspection extends BaseModel {
       defects: defects ?? this.defects,
       isComplete: isComplete ?? this.isComplete,
       panelTemperatureF: panelTemperatureF ?? this.panelTemperatureF,
+      notes: notes ?? this.notes,
+      overallResult: overallResult ?? this.overallResult,
+      status: status ?? this.status,
+      batteryCount: batteryCount ?? this.batteryCount,
+      batteryPassed: batteryPassed ?? this.batteryPassed,
+      componentCount: componentCount ?? this.componentCount,
+      componentPassed: componentPassed ?? this.componentPassed,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -132,12 +189,14 @@ class Inspection extends BaseModel {
   /// Get display date
   String get displayDate {
     final date = inspectionDate ?? startDatetime ?? createdAt;
+    if (date == null) return 'N/A';
     return '${date.month}/${date.day}/${date.year}';
   }
 
   /// Get status text
   String get statusText {
-    if (isComplete) return 'Complete';
+    if (status != null) return status!;
+    if (isComplete) return 'Completed';
     if (isInProgress) return 'In Progress';
     return 'Not Started';
   }

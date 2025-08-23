@@ -41,6 +41,11 @@ class Device extends BaseModel {
     super.deleted,
   });
 
+  String? get deviceTypeName {
+    // You'll need to fetch this from device_types table or store it in the model
+    return null; // Temporary fix
+  }
+
   /// Create Device from SQLite map
   factory Device.fromMap(Map<String, dynamic> map) {
     return Device(

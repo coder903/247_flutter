@@ -2,15 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:camera/camera.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../models/inspection.dart';
 import '../../models/battery_test.dart';
 import '../../repositories/battery_test_repository.dart';
 import '../../config/constants.dart';
 import '../../utils/battery_calculator.dart';
 import '../../services/photo_service.dart';
+import '../../services/camera_service.dart';
+import '../../services/barcode_scanner_service.dart';
 import 'component_test_list_screen.dart';
+
 
 
 class BatteryTestScreen extends StatefulWidget {
@@ -108,83 +109,48 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
   }
 
   Future<void> _scanBarcode() async {
-    final result = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const BarcodeScannerScreen(),
-      ),
+    final scannedCode = await BarcodeScannerService.scanBarcode(
+      context: context,
+      title: 'Scan Battery Barcode',
+      instructionText: 'Scan the barcode on the battery',
     );
     
-    if (result != null) {
-      _barcodeController.text = result;
+    if (scannedCode != null) {
+      setState(() {
+        _barcodeController.text = scannedCode;
+      });
     }
   }
 
   Future<void> _takeBatteryPhoto() async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No camera available')),
-          );
-        }
-        return;
-      }
-
-      final result = await Navigator.push<String>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CameraScreen(
-            cameras: cameras,
-            isVideo: false,
-          ),
-        ),
+    final photoPath = await CameraService.takePhoto(
+      context: context,
+      propertyId: widget.inspection.propertyId.toString(),
+      deviceType: 'Battery',
+      barcode: _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
+    );
+    
+    if (photoPath != null) {
+      setState(() => _photoPath = photoPath);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photo captured successfully')),
       );
-      
-      if (result != null) {
-        setState(() => _photoPath = result);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera error: $e')),
-        );
-      }
     }
   }
 
   Future<void> _takeBatteryVideo() async {
-    try {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No camera available')),
-          );
-        }
-        return;
-      }
-
-      final result = await Navigator.push<String>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CameraScreen(
-            cameras: cameras,
-            isVideo: true,
-          ),
-        ),
+    final videoPath = await CameraService.takeVideo(
+      context: context,
+      propertyId: widget.inspection.propertyId.toString(),
+      deviceType: 'Battery',
+      barcode: _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
+    );
+    
+    if (videoPath != null) {
+      setState(() => _videoPath = videoPath);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video captured successfully')),
       );
-      
-      if (result != null) {
-        setState(() => _videoPath = result);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Camera error: $e')),
-        );
-      }
     }
   }
 
@@ -675,76 +641,6 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
                 ),
               ],
             ),
-    );
-  }
-}
-
-// Placeholder screens - to be implemented
-class BarcodeScannerScreen extends StatelessWidget {
-  const BarcodeScannerScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Implement barcode scanner
-    return Scaffold(
-      appBar: AppBar(title: const Text('Scan Barcode')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Barcode Scanner Coming Soon'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Simulate scan
-                Navigator.pop(context, '12345678');
-              },
-              child: const Text('Simulate Scan'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class CameraScreen extends StatelessWidget {
-  final List<CameraDescription> cameras;
-  final bool isVideo;
-
-  const CameraScreen({
-    super.key,
-    required this.cameras,
-    required this.isVideo,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Implement camera
-    return Scaffold(
-      appBar: AppBar(title: Text(isVideo ? 'Take Video' : 'Take Photo')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isVideo ? Icons.videocam : Icons.camera_alt,
-              size: 64,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(isVideo ? 'Video Camera Coming Soon' : 'Photo Camera Coming Soon'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Simulate capture
-                Navigator.pop(context, '/path/to/file');
-              },
-              child: Text(isVideo ? 'Simulate Video' : 'Simulate Photo'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

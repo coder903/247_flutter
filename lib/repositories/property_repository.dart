@@ -40,7 +40,7 @@ class PropertyRepository extends BaseRepository<Property> {
   
   /// Check if QR code exists
   Future<bool> qrCodeExists(String qrCode) async {
-    final count = await this.count(where: 'qr_code = ?', whereArgs: [qrCode]);
+    final count = await this.getCount(where: 'qr_code = ?', whereArgs: [qrCode]);
     return count > 0;
   }
   

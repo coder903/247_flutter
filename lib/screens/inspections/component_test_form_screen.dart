@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../models/models.dart';
 import '../../repositories/repositories.dart';
 import '../../services/photo_service.dart';
+import '../../services/camera_service.dart';
 
 class ComponentTestFormScreen extends StatefulWidget {
   final Inspection inspection;
@@ -122,21 +123,16 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
       case 'Smoke Detector':
       case 'Heat Detector':
         return _buildSmokeDetectorFields();
-      
       case 'Horn/Strobe':
       case 'Horn':
       case 'Strobe':
         return _buildHornStrobeFields();
-      
       case 'Fire Extinguisher':
         return _buildFireExtinguisherFields();
-      
       case 'Emergency Light':
         return _buildEmergencyLightFields();
-      
       case 'Exit Sign':
         return _buildExitSignFields();
-      
       default:
         return const SizedBox.shrink();
     }
@@ -152,30 +148,10 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
         TextFormField(
           controller: _sensitivityController,
           decoration: const InputDecoration(
-            hintText: 'Enter sensitivity reading',
-            suffixText: '%/ft',
+            hintText: 'e.g., 2.5% per foot',
+            suffixText: '% per foot',
           ),
           keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Typical range: 0.5-3.5%/ft obscuration',
-                  style: TextStyle(fontSize: 12, color: Colors.blue[700]),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
@@ -191,55 +167,49 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
         TextFormField(
           controller: _decibelController,
           decoration: const InputDecoration(
-            hintText: 'Enter decibel reading',
+            hintText: 'e.g., 85',
             suffixText: 'dB',
           ),
           keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Minimum: 75dB at 10 feet',
-                  style: TextStyle(fontSize: 12, color: Colors.blue[700]),
-                ),
-              ),
-            ],
-          ),
         ),
       ],
     );
   }
 
   Widget _buildFireExtinguisherFields() {
+    final bool isOverdueService = _servicedDate != null && 
+        _servicedDate!.isBefore(DateTime.now().subtract(const Duration(days: 365)));
+    final bool isOverdueHydro = _hydroDate != null && 
+        _hydroDate!.isBefore(DateTime.now().subtract(const Duration(days: 365 * 5)));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        
-        // Size
         const Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextFormField(
           controller: _sizeController,
           decoration: const InputDecoration(
-            hintText: 'e.g., 5 lbs, 10 lbs, 20 lbs',
+            hintText: 'e.g., 10 lbs',
+            suffixText: 'lbs',
           ),
         ),
         
         const SizedBox(height: 20),
-        
-        // Service Date
-        const Text('Last Service Date', style: TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            const Text('Last Serviced', style: TextStyle(fontWeight: FontWeight.bold)),
+            if (isOverdueService) ...[
+              const SizedBox(width: 8),
+              const Chip(
+                label: Text('OVERDUE', style: TextStyle(fontSize: 12)),
+                backgroundColor: Colors.red,
+                labelStyle: TextStyle(color: Colors.white),
+              ),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: () => _selectDate(true),
@@ -250,31 +220,36 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.calendar_today, color: Colors.grey[600]),
-                const SizedBox(width: 12),
                 Text(
                   _servicedDate != null
-                      ? DateFormat('MM/dd/yyyy').format(_servicedDate!)
-                      : 'Select service date',
+                      ? DateFormat('MMM dd, yyyy').format(_servicedDate!)
+                      : 'Select date',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: _servicedDate != null ? Colors.black : Colors.grey[600],
+                    color: _servicedDate != null ? null : Colors.grey,
                   ),
                 ),
+                const Icon(Icons.calendar_today, size: 20),
               ],
             ),
           ),
         ),
-        if (_servicedDate != null) ...[
-          const SizedBox(height: 8),
-          _buildServiceStatus(),
-        ],
         
         const SizedBox(height: 20),
-        
-        // Hydrostatic Test Date
-        const Text('Hydrostatic Test Date', style: TextStyle(fontWeight: FontWeight.bold)),
+        Row(
+          children: [
+            const Text('Hydrostatic Test', style: TextStyle(fontWeight: FontWeight.bold)),
+            if (isOverdueHydro) ...[
+              const SizedBox(width: 8),
+              const Chip(
+                label: Text('OVERDUE', style: TextStyle(fontSize: 12)),
+                backgroundColor: Colors.red,
+                labelStyle: TextStyle(color: Colors.white),
+              ),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         InkWell(
           onTap: () => _selectDate(false),
@@ -285,95 +260,22 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.water_drop, color: Colors.grey[600]),
-                const SizedBox(width: 12),
                 Text(
                   _hydroDate != null
-                      ? DateFormat('MM/dd/yyyy').format(_hydroDate!)
-                      : 'Select hydro test date',
+                      ? DateFormat('MMM dd, yyyy').format(_hydroDate!)
+                      : 'Select date',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: _hydroDate != null ? Colors.black : Colors.grey[600],
+                    color: _hydroDate != null ? null : Colors.grey,
                   ),
                 ),
+                const Icon(Icons.calendar_today, size: 20),
               ],
             ),
           ),
         ),
-        if (_hydroDate != null) ...[
-          const SizedBox(height: 8),
-          _buildHydroStatus(),
-        ],
       ],
-    );
-  }
-
-  Widget _buildServiceStatus() {
-    if (_servicedDate == null) return const SizedBox.shrink();
-    
-    final monthsSinceService = DateTime.now().difference(_servicedDate!).inDays / 30;
-    final needsService = monthsSinceService >= 12;
-    
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: needsService ? Colors.red[50] : Colors.green[50],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            needsService ? Icons.warning : Icons.check_circle,
-            size: 16,
-            color: needsService ? Colors.red[700] : Colors.green[700],
-          ),
-          const SizedBox(width: 8),
-          Text(
-            needsService
-                ? 'Service overdue (${monthsSinceService.toInt()} months ago)'
-                : 'Service current (${monthsSinceService.toInt()} months ago)',
-            style: TextStyle(
-              fontSize: 12,
-              color: needsService ? Colors.red[700] : Colors.green[700],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHydroStatus() {
-    if (_hydroDate == null) return const SizedBox.shrink();
-    
-    final yearsSinceHydro = DateTime.now().difference(_hydroDate!).inDays / 365;
-    final needsHydro = yearsSinceHydro >= 5; // 5 years for most extinguishers
-    
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: needsHydro ? Colors.red[50] : Colors.green[50],
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            needsHydro ? Icons.warning : Icons.check_circle,
-            size: 16,
-            color: needsHydro ? Colors.red[700] : Colors.green[700],
-          ),
-          const SizedBox(width: 8),
-          Text(
-            needsHydro
-                ? 'Hydro test overdue (${yearsSinceHydro.toStringAsFixed(1)} years ago)'
-                : 'Hydro test current (${yearsSinceHydro.toStringAsFixed(1)} years ago)',
-            style: TextStyle(
-              fontSize: 12,
-              color: needsHydro ? Colors.red[700] : Colors.green[700],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -382,40 +284,12 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        const Text('24 Hour Post Check', style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: CheckboxListTile(
-            title: const Text('24 hour post check completed'),
-            subtitle: const Text('Battery maintained charge after 24 hours'),
-            value: _check24hrPost,
-            onChanged: (value) => setState(() => _check24hrPost = value ?? false),
-            controlAffinity: ListTileControlAffinity.leading,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.amber[50],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.amber[700]),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Emergency lights should provide 90 minutes of illumination',
-                  style: TextStyle(fontSize: 12, color: Colors.amber[700]),
-                ),
-              ),
-            ],
-          ),
+        CheckboxListTile(
+          title: const Text('24-Hour Post Check Completed'),
+          subtitle: const Text('Verify light stays on for 90 minutes'),
+          value: _check24hrPost,
+          onChanged: (value) => setState(() => _check24hrPost = value ?? false),
+          contentPadding: EdgeInsets.zero,
         ),
       ],
     );
@@ -426,39 +300,14 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.blue[50],
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.exit_to_app, color: Colors.blue[700]),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Exit Sign Checklist',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[700],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '• Sign clearly visible and unobstructed\n'
-                '• Letters properly illuminated\n'
-                '• No physical damage\n'
-                '• Battery backup functional (if applicable)',
-                style: TextStyle(fontSize: 14, color: Colors.blue[700]),
-              ),
-            ],
-          ),
+        const Text('Visual Check', style: TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        const Text(
+          '• Letters clearly visible\n'
+          '• No damaged or missing letters\n'
+          '• Properly illuminated\n'
+          '• Battery backup functional',
+          style: TextStyle(fontSize: 14),
         ),
       ],
     );
@@ -485,21 +334,35 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
   }
 
   Future<void> _takePhoto() async {
-    // TODO: Implement camera
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Camera integration coming soon')),
+    final photoPath = await CameraService.takePhoto(
+      context: context,
+      propertyId: widget.inspection.propertyId.toString(),
+      deviceType: _deviceTypeName,
+      barcode: widget.device['barcode'],
     );
-    // Simulate photo taken
-    setState(() => _photoPath = '/path/to/photo.jpg');
+    
+    if (photoPath != null) {
+      setState(() => _photoPath = photoPath);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photo captured successfully')),
+      );
+    }
   }
 
   Future<void> _takeVideo() async {
-    // TODO: Implement video
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Video integration coming soon')),
+    final videoPath = await CameraService.takeVideo(
+      context: context,
+      propertyId: widget.inspection.propertyId.toString(),
+      deviceType: _deviceTypeName,
+      barcode: widget.device['barcode'],
     );
-    // Simulate video taken
-    setState(() => _videoPath = '/path/to/video.mp4');
+    
+    if (videoPath != null) {
+      setState(() => _videoPath = videoPath);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video captured successfully')),
+      );
+    }
   }
 
   Future<void> _saveTest() async {
@@ -541,16 +404,18 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
       );
       
       Navigator.pop(context, true);
-      
     } catch (e) {
+      print('Error saving test: $e');
+      setState(() => _isLoading = false);
+      
       if (!mounted) return;
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving test: $e')),
+        const SnackBar(
+          content: Text('Error saving test'),
+          backgroundColor: Colors.red,
+        ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
@@ -558,19 +423,19 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_deviceTypeName),
+        title: Text('Test ${_deviceTypeName}'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Device info card
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

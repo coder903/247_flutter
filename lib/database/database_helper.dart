@@ -21,8 +21,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,  // Increment this version number
       onCreate: _createDB,
+      onUpgrade: _upgradeDatabase,
       onConfigure: _onConfigure,
     );
   }
@@ -35,6 +36,19 @@ class DatabaseHelper {
     // Execute schema creation
     await _createTables(db);
     await _insertDefaultData(db);
+  }
+
+  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add missing columns to inspections table
+      await db.execute('ALTER TABLE inspections ADD COLUMN notes TEXT');
+      await db.execute('ALTER TABLE inspections ADD COLUMN overall_result TEXT');
+      await db.execute('ALTER TABLE inspections ADD COLUMN status TEXT DEFAULT "In Progress"');
+      await db.execute('ALTER TABLE inspections ADD COLUMN battery_count INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE inspections ADD COLUMN battery_passed INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE inspections ADD COLUMN component_count INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE inspections ADD COLUMN component_passed INTEGER DEFAULT 0');
+    }
   }
 
   Future<void> _createTables(Database db) async {
@@ -215,6 +229,13 @@ class DatabaseHelper {
         defects TEXT,
         is_complete INTEGER DEFAULT 0,
         panel_temperature_f REAL,
+        notes TEXT,
+        overall_result TEXT,
+        status TEXT DEFAULT 'In Progress',
+        battery_count INTEGER DEFAULT 0,
+        battery_passed INTEGER DEFAULT 0,
+        component_count INTEGER DEFAULT 0,
+        component_passed INTEGER DEFAULT 0,
         created_at TEXT DEFAULT (datetime('now')),
         updated_at TEXT DEFAULT (datetime('now')),
         sync_status TEXT DEFAULT 'pending',

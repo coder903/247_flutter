@@ -127,7 +127,7 @@ class ServiceTicket extends BaseModel {
   bool get hasParts => partsNeeded != null && partsNeeded!.isNotEmpty;
 
   /// Get age of ticket in days
-  int get ageInDays => DateTime.now().difference(createdAt).inDays;
+  int get ageInDays => createdAt != null ? DateTime.now().difference(createdAt!).inDays : 0;
 
   /// Get display age
   String get displayAge {

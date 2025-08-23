@@ -19,6 +19,13 @@ class BatteryTest extends BaseModel {
   final String? photoPath;
   final String? videoPath;
 
+
+  /// Getter for minRequired (alias for minCurrentRequired)
+  double? get minRequired => minCurrentRequired;
+  
+  /// Getter for temperature (alias for temperatureF)
+  double? get temperature => temperatureF;
+
   BatteryTest({
     super.id,
     super.serverId,
