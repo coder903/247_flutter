@@ -82,39 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context);
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fire Inspection'),
-        actions: [
-          const SyncStatusWidget(),
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuSelection(value, context),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'sync',
-                child: ListTile(
-                  leading: Icon(Icons.sync),
-                  title: Text('Sync Management'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'settings',
-                child: ListTile(
-                  leading: Icon(Icons.settings),
-                  title: Text('Settings'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'logout',
-                child: ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text('Logout'),
-                ),
-              ),
-            ],
-          ),
+        actions: const [
+          SyncStatusWidget(),
         ],
       ),
       body: RefreshIndicator(
@@ -122,35 +94,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Welcome, ${authService.userName ?? 'Inspector'}!',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Select an action to get started',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
+                    _buildStatsGrid(context),
                     const SizedBox(height: 24),
-                    
-                    // Statistics Cards
-                    _buildStatisticsSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Action Cards
                     _buildActionCards(context),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Recent Activity
-                    _buildRecentActivity(),
                   ],
                 ),
               ),
@@ -158,12 +109,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatisticsSection() {
+  Widget _buildStatsGrid(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Today\'s Overview',
+          'Overview',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 16),
@@ -178,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildStatCard(
               'Pending',
               _stats['pendingInspections'].toString(),
-              Icons.pending_actions,
+              Icons.hourglass_empty,
               Colors.orange,
             ),
             _buildStatCard(
@@ -194,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Colors.blue,
             ),
             _buildStatCard(
-              'Properties',
+              'Fire Alarm Systems',
               _stats['totalProperties'].toString(),
               Icons.business,
               Colors.purple,
@@ -248,29 +199,40 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1,
           children: [
             _buildActionCard(
               context,
               'Start Inspection',
-              Icons.assignment,
+              Icons.assignment_turned_in,
               Colors.green,
               () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const PropertySelectionScreen(),
+                  builder: (context) => const PropertySelectionScreen(),
                 ),
               ),
             ),
             _buildActionCard(
               context,
-              'Site Survey',
-              Icons.location_on,
-              Colors.blue,
+              'Fire Alarm Systems',
+              Icons.home_work,
+              Colors.purple,
               () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const PropertyListScreen(),
+                  builder: (context) => const PropertyListScreen(),
+                ),
+              ),
+            ),
+            _buildActionCard(
+              context,
+              'Devices',
+              Icons.devices,
+              Colors.orange,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeviceManagementScreen(),
                 ),
               ),
             ),
@@ -278,23 +240,35 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               'Service Tickets',
               Icons.build_circle,
-              Colors.orange,
+              Colors.blue,
               () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ServiceTicketListScreen(),
+                  builder: (context) => const ServiceTicketListScreen(),
                 ),
               ),
             ),
             _buildActionCard(
               context,
-              'Device Management',
-              Icons.devices,
-              Colors.purple,
+              'Sync Data',
+              Icons.sync,
+              Colors.teal,
               () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const DeviceManagementScreen(),
+                  builder: (context) => const SyncScreen(),
+                ),
+              ),
+            ),
+            _buildActionCard(
+              context,
+              'Settings',
+              Icons.settings,
+              Colors.grey,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
                 ),
               ),
             ),
@@ -322,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 48, color: color),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium,
@@ -331,70 +305,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRecentActivity() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recent Activity',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('No recent activity'),
-            subtitle: const Text('Complete an inspection to see activity here'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _handleMenuSelection(String value, BuildContext context) {
-    switch (value) {
-      case 'sync':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SyncScreen()),
-        );
-        break;
-      case 'settings':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SettingsScreen()),
-        );
-        break;
-      case 'logout':
-        _showLogoutConfirmation(context);
-        break;
-    }
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Are you sure you want to logout?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Provider.of<AuthService>(context, listen: false).logout();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Logout'),
-          ),
-        ],
       ),
     );
   }

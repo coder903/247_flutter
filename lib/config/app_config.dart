@@ -1,11 +1,15 @@
 // lib/config/app_config.dart
 class AppConfig {
-  // API Configuration
-  static const String apiBaseUrl = 'https://your-api-domain.com'; // Replace with your actual API URL
+  // API Configuration - Updated for Flask dev server
+  static const String apiBaseUrl = 'https://firealarmsupporttools.com'; // Production URL
   static const String apiVersion = 'v1';
   
   // Development/Production flags
   static const bool isDevelopment = true; // Set to false for production
+  
+  // Flask Dev Server Configuration
+  static const String flaskDevServerIp = '192.168.1.141';
+  static const int flaskDevServerPort = 5000;
   
   // Database Configuration
   static const String databaseName = 'fire_inspection.db';
@@ -32,7 +36,7 @@ class AppConfig {
   static const List<double> ratedAmpHours = [7, 12, 18, 26, 35, 55, 100];
   
   // PDF Configuration
-  static const String companyName = 'Your Company Name';
+  static const String companyName = '247';
   static const String companyLogo = 'assets/images/logo.png';
   static const String reportFooter = 'This report complies with NFPA 72 standards';
   
@@ -53,19 +57,43 @@ class AppConfig {
   static const Duration cacheExpiration = Duration(days: 7);
   static const int maxCacheSize = 100; // MB
   
-  // Development URLs (for testing)
+  // Get the correct API URL based on environment
   static String get apiUrl {
     if (isDevelopment) {
-      return 'http://192.168.1.100:5000'; // Local development server
+      // Use Flask dev server with /inspection-api/ prefix
+      return 'http://$flaskDevServerIp:$flaskDevServerPort/inspection-api';
     }
+    // Production URL would be something like:
+    // return 'https://firealarmsupporttools.com/api';
     return apiBaseUrl;
   }
   
-  // Get full API endpoint
+  // Get full API endpoint - UPDATED for Flask API structure
   static String getApiEndpoint(String path) {
     final cleanPath = path.startsWith('/') ? path : '/$path';
+    // In development, apiUrl already includes /inspection-api
+    // so we don't need to add /api/v1 prefix
+    if (isDevelopment) {
+      return '$apiUrl$cleanPath';
+    }
+    // For production, you might need different path structure
     return '$apiUrl/api/$apiVersion$cleanPath';
   }
+  
+  // Flask API Endpoints (for reference)
+  static const String authLoginEndpoint = '/auth/login';
+  static const String authRefreshEndpoint = '/auth/refresh';
+  static const String authLogoutEndpoint = '/auth/logout';
+  static const String buildingsEndpoint = '/buildings';
+  static const String customersEndpoint = '/customers';
+  static const String systemsEndpoint = '/systems';
+  static const String devicesEndpoint = '/devices';
+  static const String inspectionsEndpoint = '/inspections';
+  static const String batteryTestsEndpoint = '/battery-tests';
+  static const String componentTestsEndpoint = '/component-tests';
+  static const String ticketsEndpoint = '/tickets';
+  static const String syncCheckEndpoint = '/sync/check';
+  static const String syncBatchEndpoint = '/sync/batch';
   
   // Validation Rules
   static const Map<String, dynamic> validationRules = {

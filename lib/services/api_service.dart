@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 
@@ -12,7 +13,7 @@ class ApiService {
   
   ApiService._init() {
     _dio = Dio(BaseOptions(
-      baseUrl: AppConfig.apiBaseUrl,
+      baseUrl: AppConfig.apiUrl, // This now points to Flask dev server
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -48,11 +49,42 @@ class ApiService {
     ));
   }
   
+  /// Check if device has internet connection
+  Future<bool> hasConnection() async {
+    try {
+      final connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.none) {
+        return false;
+      }
+      
+      // Also try to ping the server
+      try {
+        await _dio.get('/health', 
+          options: Options(
+            sendTimeout: const Duration(seconds: 5),
+            receiveTimeout: const Duration(seconds: 5),
+          )
+        );
+        return true;
+      } catch (e) {
+        // If server is not reachable
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+  
   /// Set authentication token
   Future<void> setAuthToken(String token) async {
     _authToken = token;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('auth_token', token);
+    if (token.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+    } else {
+      _dio.options.headers.remove('Authorization');
+    }
   }
   
   /// Get stored auth token
@@ -77,16 +109,18 @@ class ApiService {
     // to notify the app about auth failure
   }
   
-  /// Login
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  /// Login - CORRECTED FOR FLASK API
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = await _dio.post('/api/auth/login', data: {
-        'username': username,
+      // Flask API uses email, not username
+      final response = await _dio.post('/auth/login', data: {
+        'email': email,
         'password': password,
       });
       
-      if (response.data['token'] != null) {
-        await setAuthToken(response.data['token']);
+      // Flask returns access_token, not token
+      if (response.data['access_token'] != null) {
+        await setAuthToken(response.data['access_token']);
       }
       
       return response.data;
@@ -98,7 +132,7 @@ class ApiService {
   /// Logout
   Future<void> logout() async {
     try {
-      await _dio.post('/api/auth/logout');
+      await _dio.post('/auth/logout');
     } catch (e) {
       // Ignore logout errors
     } finally {
@@ -224,7 +258,7 @@ class ApiService {
     try {
       final formData = FormData();
       
-      for (final file in files) {
+      for (var file in files) {
         final fileName = file.path.split('/').last;
         formData.files.add(MapEntry(
           fieldName,
@@ -248,20 +282,84 @@ class ApiService {
     }
   }
   
-  /// Download file
-  Future<void> downloadFile(
-    String url,
-    String savePath, {
-    void Function(int, int)? onReceiveProgress,
-    CancelToken? cancelToken,
-  }) async {
+  // ===== INSPECTION-SPECIFIC METHODS =====
+  
+  /// Create inspection
+  Future<Map<String, dynamic>> createInspection(Map<String, dynamic> data) async {
     try {
-      await _dio.download(
-        url,
-        savePath,
-        onReceiveProgress: onReceiveProgress,
-        cancelToken: cancelToken,
-      );
+      final response = await post('/inspections', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Create battery test
+  Future<Map<String, dynamic>> createBatteryTest(int inspectionId, Map<String, dynamic> data) async {
+    try {
+      final response = await post('/inspections/$inspectionId/batteries', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Create component test
+  Future<Map<String, dynamic>> createComponentTest(int inspectionId, Map<String, dynamic> data) async {
+    try {
+      final response = await post('/inspections/$inspectionId/components', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Create service ticket
+  Future<Map<String, dynamic>> createServiceTicket(Map<String, dynamic> data) async {
+    try {
+      final response = await post('/tickets', data: data);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Get buildings
+  Future<List<dynamic>> getBuildings() async {
+    try {
+      final response = await get('/buildings');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Get customers
+  Future<List<dynamic>> getCustomers() async {
+    try {
+      final response = await get('/customers');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Get properties/systems
+  Future<List<dynamic>> getSystems() async {
+    try {
+      final response = await get('/systems');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  
+  /// Get devices
+  Future<List<dynamic>> getDevices({int? propertyId}) async {
+    try {
+      final queryParams = propertyId != null ? {'property_id': propertyId} : null;
+      final response = await get('/devices', queryParameters: queryParams);
+      return response.data;
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -281,7 +379,9 @@ class ApiService {
         final statusCode = error.response?.statusCode;
         final responseData = error.response?.data;
         
-        if (responseData is Map && responseData['message'] != null) {
+        if (responseData is Map && responseData['error'] != null) {
+          errorMessage = responseData['error'];
+        } else if (responseData is Map && responseData['message'] != null) {
           errorMessage = responseData['message'];
         } else {
           switch (statusCode) {
@@ -324,15 +424,5 @@ class ApiService {
     }
     
     return errorMessage;
-  }
-  
-  /// Check connectivity
-  Future<bool> checkConnectivity() async {
-    try {
-      final response = await _dio.get('/api/health');
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
   }
 }

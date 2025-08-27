@@ -1,5 +1,7 @@
 // lib/screens/sync/sync_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../services/sync_manager.dart';
 import '../../database/database_helper.dart';
 
@@ -16,13 +18,43 @@ class _SyncScreenState extends State<SyncScreen> {
   
   List<Map<String, dynamic>> _pendingItems = [];
   List<Map<String, dynamic>> _syncHistory = [];
-  Map<String, dynamic> _syncStats = {};
+  SyncStats? _syncStats;
   bool _isLoading = true;
+  
+  // Subscriptions
+  StreamSubscription<SyncProgress>? _progressSubscription;
+  StreamSubscription<SyncStatus>? _statusSubscription;
   
   @override
   void initState() {
     super.initState();
     _loadSyncData();
+    _listenToSyncEvents();
+  }
+  
+  @override
+  void dispose() {
+    _progressSubscription?.cancel();
+    _statusSubscription?.cancel();
+    super.dispose();
+  }
+  
+  void _listenToSyncEvents() {
+    // Listen to sync progress
+    _progressSubscription = _syncManager.onSyncProgress.listen((progress) {
+      // Just refresh data when progress updates
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    
+    // Listen to sync status changes
+    _statusSubscription = _syncManager.syncStatusStream.listen((status) {
+      // Reload data when sync completes
+      if (status == SyncStatus.success || status == SyncStatus.error) {
+        _loadSyncData();
+      }
+    });
   }
   
   Future<void> _loadSyncData() async {
@@ -110,6 +142,25 @@ class _SyncScreenState extends State<SyncScreen> {
           ),
         ],
       ),
+      floatingActionButton: StreamBuilder<SyncStatus>(
+        stream: _syncManager.syncStatusStream,
+        builder: (context, snapshot) {
+          final status = snapshot.data ?? SyncStatus.idle;
+          
+          if (status == SyncStatus.syncing) {
+            return const FloatingActionButton(
+              onPressed: null,
+              child: CircularProgressIndicator(color: Colors.white),
+            );
+          }
+          
+          return FloatingActionButton.extended(
+            onPressed: () => _performSync(),
+            icon: const Icon(Icons.sync),
+            label: const Text('Sync Now'),
+          );
+        },
+      ),
     );
   }
   
@@ -154,15 +205,23 @@ class _SyncScreenState extends State<SyncScreen> {
                             ),
                           ],
                         ),
-                        ElevatedButton.icon(
-                          onPressed: status == SyncStatus.syncing
-                              ? null
-                              : () async {
-                                  await _syncManager.performSync();
-                                  _loadSyncData();
-                                },
-                          icon: const Icon(Icons.sync),
-                          label: const Text('Sync Now'),
+                        Row(
+                          children: [
+                            if (_syncStats != null) ...[
+                              TextButton.icon(
+                                onPressed: _syncStats!.failedSyncs > 0
+                                    ? () => _retryFailedSyncs()
+                                    : null,
+                                icon: const Icon(Icons.replay),
+                                label: Text('Retry (${_syncStats!.failedSyncs})'),
+                              ),
+                              TextButton.icon(
+                                onPressed: () => _clearSyncQueue(),
+                                icon: const Icon(Icons.clear_all),
+                                label: const Text('Clear'),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
@@ -193,15 +252,16 @@ class _SyncScreenState extends State<SyncScreen> {
               },
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatCard('Pending', (_syncStats['pending'] ?? 0).toString()),
-                _buildStatCard('Synced', (_syncStats['synced'] ?? 0).toString()),
-                _buildStatCard('Failed', (_syncStats['failed'] ?? 0).toString()),
-                _buildStatCard('Last Sync', _getLastSyncTime()),
-              ],
-            ),
+            if (_syncStats != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatCard('Pending', _syncStats!.pendingUploads.toString()),
+                  _buildStatCard('Synced', _syncStats!.totalSynced.toString()),
+                  _buildStatCard('Failed', _syncStats!.failedSyncs.toString()),
+                  _buildStatCard('Last Sync', _getLastSyncTime()),
+                ],
+              ),
           ],
         ),
       ),
@@ -300,28 +360,62 @@ class _SyncScreenState extends State<SyncScreen> {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Synced: ${_formatDateTime(item['last_sync_attempt'] as String?)}'),
+                if (item['last_sync_attempt'] != null)
+                  Text('Synced: ${_formatDateTime(item['last_sync_attempt'] as String)}'),
                 if (item['error_message'] != null)
                   Text(
                     'Error: ${item['error_message']}',
                     style: const TextStyle(color: Colors.red, fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),
+            isThreeLine: item['error_message'] != null,
           ),
         );
       },
     );
   }
   
+  Future<void> _performSync() async {
+    await _syncManager.syncAll();  // or syncNow() - both work
+  }
+  
+  Future<void> _retryFailedSyncs() async {
+    await _syncManager.retryFailedSyncs();
+    await _loadSyncData();
+  }
+  
+  Future<void> _clearSyncQueue() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Sync Queue'),
+        content: const Text('Remove all synced items from history?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirm == true) {
+      await _syncManager.clearSyncQueue();
+      await _loadSyncData();
+    }
+  }
+  
   Future<void> _removeSyncItem(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Sync Item'),
-        content: const Text('Are you sure you want to remove this item from the sync queue?'),
+        title: const Text('Remove Item'),
+        content: const Text('Remove this item from the sync queue?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -416,14 +510,13 @@ class _SyncScreenState extends State<SyncScreen> {
   }
   
   String _getLastSyncTime() {
-    if (_syncHistory.isEmpty) return 'Never';
+    if (_syncStats == null || _syncStats!.lastSync == null) {
+      return 'Never';
+    }
     
-    final lastSync = _syncHistory.first['last_sync_attempt'] as String?;
-    if (lastSync == null) return 'Never';
-    
-    final dateTime = DateTime.parse(lastSync);
     final now = DateTime.now();
-    final difference = now.difference(dateTime);
+    final lastSync = _syncStats!.lastSync!;
+    final difference = now.difference(lastSync);
     
     if (difference.inMinutes < 1) {
       return 'Just now';
@@ -431,15 +524,19 @@ class _SyncScreenState extends State<SyncScreen> {
       return '${difference.inMinutes}m ago';
     } else if (difference.inDays < 1) {
       return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
     } else {
-      return '${difference.inDays}d ago';
+      return DateFormat.yMd().add_jm().format(lastSync);
     }
   }
   
-  String _formatDateTime(String? dateTimeStr) {
-    if (dateTimeStr == null) return 'Unknown';
-    
-    final dateTime = DateTime.parse(dateTimeStr);
-    return '${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  String _formatDateTime(String dateTimeStr) {
+    try {
+      final dateTime = DateTime.parse(dateTimeStr);
+      return DateFormat.yMd().add_jm().format(dateTime);
+    } catch (e) {
+      return dateTimeStr;
+    }
   }
 }

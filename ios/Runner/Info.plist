@@ -57,5 +57,24 @@
     
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>This app needs location access to tag inspection locations</string>
+
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Allow HTTP for local development -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<!-- For development only - allows all HTTP connections -->
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<!-- You can also specify your specific dev server -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>192.168.1.100</key> <!-- Replace with your Mac's IP -->
+			<dict>
+				<key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

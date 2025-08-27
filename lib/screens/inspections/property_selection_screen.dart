@@ -132,7 +132,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Property'),
+        title: const Text('Select System'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Container(
@@ -242,7 +242,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No properties found',
+                        'No systems found',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       if (_searchQuery.isNotEmpty) ...[
