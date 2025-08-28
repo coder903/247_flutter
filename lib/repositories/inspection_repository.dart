@@ -63,7 +63,7 @@ class InspectionRepository extends BaseRepository<Inspection> {
         b.address as building_address,
         c.company_name
       FROM inspections i
-      LEFT JOIN alarm_panels p ON i.alarm_panel_id = p.id
+      LEFT JOIN alarmPanels p ON i.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       WHERE i.deleted = 0

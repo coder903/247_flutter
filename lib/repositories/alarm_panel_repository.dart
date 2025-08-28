@@ -14,7 +14,7 @@ class AlarmPanelRepository extends BaseRepository<AlarmPanel> {
   AlarmPanelRepository._internal();
   
   @override
-  String get tableName => 'alarm_panels';
+  String get tableName => 'alarmPanels';
   
   @override
   AlarmPanel fromMap(Map<String, dynamic> map) => AlarmPanel.fromMap(map);
@@ -75,19 +75,36 @@ class AlarmPanelRepository extends BaseRepository<AlarmPanel> {
   
   /// Get alarmPanels with full details (building and customer info)
   Future<List<Map<String, dynamic>>> getPropertiesWithDetails() async {
+    print('DEBUG: Fetching alarm panels with details from database');
+    
     const sql = '''
       SELECT 
         p.*,
         b.building_name, b.address as building_address, b.city, b.state,
         c.company_name, c.contact_name as customer_name
-      FROM alarm_panels p
+      FROM alarmPanels p
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       WHERE p.deleted = 0
       ORDER BY p.name ASC
     ''';
     
-    return rawQuery(sql);
+    // Check if the alarmPanels table has any data
+    final db = await DatabaseHelper.instance.database;
+    final count = await db.rawQuery('SELECT COUNT(*) as count FROM alarmPanels');
+    print('DEBUG: Total alarm panels in database: ${count.first['count']}');
+    
+    // Check if buildings and customers tables have data
+    final buildingCount = await db.rawQuery('SELECT COUNT(*) as count FROM buildings');
+    print('DEBUG: Total buildings in database: ${buildingCount.first['count']}');
+    
+    final customerCount = await db.rawQuery('SELECT COUNT(*) as count FROM customers');
+    print('DEBUG: Total customers in database: ${customerCount.first['count']}');
+    
+    final results = await rawQuery(sql);
+    print('DEBUG: Query returned ${results.length} alarm panels with details');
+    
+    return results;
   }
   
   /// Get alarmPanels needing inspection
@@ -123,15 +140,18 @@ class AlarmPanelRepository extends BaseRepository<AlarmPanel> {
         b.building_name, b.address as building_address,
         c.company_name,
         MAX(i.inspection_date) as last_inspection_date,
-        JULIANDAY('now') - JULIANDAY(MAX(i.inspection_date)) as days_since_inspection
-      FROM alarm_panels p
+        CASE 
+          WHEN MAX(i.inspection_date) IS NULL THEN NULL
+          ELSE CAST(JULIANDAY('now') - JULIANDAY(MAX(i.inspection_date)) AS INTEGER)
+        END as days_since_inspection
+      FROM alarmPanels p
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       LEFT JOIN inspections i ON p.id = i.alarm_panel_id AND i.deleted = 0 AND i.is_complete = 1
       WHERE p.deleted = 0
       GROUP BY p.id
-      HAVING last_inspection_date IS NULL OR last_inspection_date < ?
-      ORDER BY days_since_inspection DESC NULLS FIRST
+      HAVING MAX(i.inspection_date) IS NULL OR MAX(i.inspection_date) < ?
+      ORDER BY days_since_inspection DESC, p.name ASC
     ''';
     
     return rawQuery(sql, [cutoffDate]);
@@ -167,7 +187,7 @@ class AlarmPanelRepository extends BaseRepository<AlarmPanel> {
       SELECT 
         p.*,
         COUNT(d.id) as device_count
-      FROM alarm_panels p
+      FROM alarmPanels p
       LEFT JOIN devices d ON p.id = d.alarm_panel_id AND d.deleted = 0
       WHERE p.deleted = 0
       GROUP BY p.id
@@ -200,7 +220,7 @@ class AlarmPanelRepository extends BaseRepository<AlarmPanel> {
         p.*,
         b.building_name, b.address as building_address, b.city, b.state,
         c.company_name, c.contact_name as customer_name, c.email as customer_email
-      FROM alarm_panels p
+      FROM alarmPanels p
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       WHERE p.id = ? AND p.deleted = 0

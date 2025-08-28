@@ -38,10 +38,60 @@ class ApiService {
         }
         handler.next(options);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         // Handle common errors
         if (error.response?.statusCode == 401) {
-          // Token expired, need to re-authenticate
+          print('DEBUG: 401 error detected, token may have expired');
+          
+          // Check if the error message is about token expiration
+          final responseData = error.response?.data;
+          if (responseData is Map && (responseData['msg'] == 'Token has expired' || 
+              responseData['msg'] == 'Missing Authorization Header')) {
+            
+            print('DEBUG: Token expired, attempting to refresh or re-login');
+            
+            // Try to refresh the token
+            try {
+              // For testing purposes, let's just re-login with hardcoded credentials
+              final response = await _dio.post('/auth/login', data: {
+                'email': 'mike@expertcoders.net',
+                'password': '55555555',
+              });
+              
+              if (response.data != null && response.data['access_token'] != null) {
+                print('DEBUG: Successfully got new token');
+                await setAuthToken(response.data['access_token']);
+                
+                // Retry the original request
+                print('DEBUG: Retrying original request');
+                final opts = error.requestOptions;
+                final options = Options(
+                  method: opts.method,
+                  headers: opts.headers,
+                );
+                options.headers?['Authorization'] = 'Bearer $_authToken';
+                
+                try {
+                  final response = await _dio.request(
+                    opts.path,
+                    options: options,
+                    data: opts.data,
+                    queryParameters: opts.queryParameters,
+                  );
+                  
+                  // Successfully retried request, resolve with the new response
+                  handler.resolve(response);
+                  return;
+                } catch (e) {
+                  print('DEBUG: Retry request failed: $e');
+                }
+              }
+            } catch (e) {
+              print('DEBUG: Token refresh failed: $e');
+            }
+          }
+          
+          // If we get here, either token refresh failed or it wasn't a token issue
           _handleAuthError();
         }
         handler.next(error);
@@ -347,9 +397,20 @@ class ApiService {
   /// Get alarmPanels/systems
   Future<List<dynamic>> getSystems() async {
     try {
+      print('DEBUG: Fetching systems from API');
       final response = await get('/systems');
-      return response.data;
+      print('DEBUG: Systems API response: ${response.data}');
+      
+      // Check if the response has the expected structure
+      if (response.data is Map && response.data.containsKey('systems')) {
+        print('DEBUG: Found ${response.data['systems'].length} systems in response');
+        return response.data['systems'];
+      } else {
+        print('DEBUG: Unexpected API response format: ${response.data.runtimeType}');
+        return response.data;
+      }
     } on DioException catch (e) {
+      print('DEBUG: Error fetching systems: $e');
       throw _handleDioError(e);
     }
   }

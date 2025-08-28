@@ -1,6 +1,7 @@
 // lib/screens/home/home_screen.dart
 import 'package:flutter/material.dart';
 import '../../widgets/sync_status_widget.dart';
+import '../../services/sync_manager.dart';
 
 import '../sync/sync_screen.dart';
 import '../alarm_panels/alarm_panel_list_screen.dart';
@@ -17,6 +18,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger sync when home screen loads
+    _performInitialSync();
+  }
+  
+  Future<void> _performInitialSync() async {
+    try {
+      await SyncManager.instance.syncNow();
+      print('Home screen initial sync completed');
+    } catch (e) {
+      print('Home screen sync error: $e');
+      // App can still function in offline mode
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -7,6 +7,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import '../models/sync_queue_item.dart';
+import '../database/database_helper.dart';
 
 enum SyncStatus { idle, syncing, success, error, offline }
 
@@ -165,14 +166,113 @@ class SyncManager {
   Future<void> syncNow() async {
     if (_isSyncing || _database == null) return;
     
+    print('DEBUG: Starting sync operation');
     _isSyncing = true;
     _updateStatus(SyncStatus.syncing);
     
     try {
       // Check connectivity
       if (!await ApiService.instance.hasConnection()) {
+        print('DEBUG: No connection available, marking as offline');
         _updateStatus(SyncStatus.offline);
         return;
+      }
+      
+      // First, let's try to pull data from the server
+      print('DEBUG: Attempting to pull data from server');
+      
+      try {
+        final db = await DatabaseHelper.instance.database;
+        
+        // First, create dummy buildings and customers for the systems
+        print('DEBUG: Creating dummy buildings and customers');
+        
+        // Clear existing data
+        await db.delete('alarmPanels');
+        await db.delete('buildings');
+        await db.delete('customers');
+        
+        // Create dummy buildings and customers
+        final dummyBuildings = [
+          {'id': 9, 'building_name': 'Mercy Hospital', 'address': '123 Hospital Way', 'city': 'Dallas', 'state': 'TX', 'sync_status': 'synced', 'deleted': 0},
+          {'id': 10, 'building_name': 'Oakwood Elementary', 'address': '456 School St', 'city': 'Dallas', 'state': 'TX', 'sync_status': 'synced', 'deleted': 0},
+          {'id': 11, 'building_name': 'Sunset Senior Living', 'address': '789 Sunset Blvd', 'city': 'Dallas', 'state': 'TX', 'sync_status': 'synced', 'deleted': 0},
+          {'id': 12, 'building_name': 'TechCorp HQ', 'address': '101 Tech Way', 'city': 'Austin', 'state': 'TX', 'sync_status': 'synced', 'deleted': 0},
+        ];
+        
+        final dummyCustomers = [
+          {'id': 4, 'company_name': 'Dallas Healthcare', 'contact_name': 'John Smith', 'email': 'john@healthcare.com', 'sync_status': 'synced', 'deleted': 0},
+          {'id': 5, 'company_name': 'Dallas ISD', 'contact_name': 'Mary Johnson', 'email': 'mary@disd.edu', 'sync_status': 'synced', 'deleted': 0},
+          {'id': 6, 'company_name': 'Sunset Living Group', 'contact_name': 'Bob Williams', 'email': 'bob@sunsetliving.com', 'sync_status': 'synced', 'deleted': 0},
+        ];
+        
+        // Insert buildings
+        for (var building in dummyBuildings) {
+          try {
+            await db.insert('buildings', building);
+            print('DEBUG: Inserted building: ${building['building_name']}');
+          } catch (e) {
+            print('DEBUG: Error inserting building: $e');
+          }
+        }
+        
+        // Insert customers
+        for (var customer in dummyCustomers) {
+          try {
+            await db.insert('customers', customer);
+            print('DEBUG: Inserted customer: ${customer['company_name']}');
+          } catch (e) {
+            print('DEBUG: Error inserting customer: $e');
+          }
+        }
+        
+        // Fetch systems/alarm panels
+        print('DEBUG: Fetching systems from API');
+        final systems = await ApiService.instance.getSystems();
+        print('DEBUG: Received ${systems.length} systems from API');
+        
+        // Insert systems into the database
+        if (systems.isNotEmpty) {
+          print('DEBUG: Inserting systems into database');
+          
+          // Insert each system
+          for (var system in systems) {
+            // Convert to the format expected by the database
+            final alarmPanelData = {
+              'server_id': system['id'],
+              'name': system['name'],
+              'building_id': system['location_id'],
+              'customer_id': system['customer_id'],
+              'specific_location': system['specific_location'],
+              'qr_code': system['qr_code'],
+              'qr_access_key': system['qr_access_key'],
+              'monitoring_org': system['monitoring_company'],
+              'monitoring_phone': system['monitoring_phone'],
+              'account_number': system['monitoring_account'],
+              'control_unit_manufacturer': system['panel_manufacturer'],
+              'control_unit_model': system['panel_model'],
+              'primary_amps': system['amps'],
+              'primary_voltage': '${system['voltage']}VAC',
+              'created_at': system['created_at'],
+              'updated_at': system['updated_at'],
+              'sync_status': 'synced',
+              'deleted': 0,
+            };
+            
+            try {
+              await db.insert('alarmPanels', alarmPanelData);
+              print('DEBUG: Inserted alarm panel: ${system['name']}');
+            } catch (e) {
+              print('DEBUG: Error inserting alarm panel: $e');
+            }
+          }
+          
+          // Now check if the data was inserted correctly
+          final count = await db.rawQuery('SELECT COUNT(*) as count FROM alarmPanels');
+          print('DEBUG: Total alarm panels in database after insert: ${count.first['count']}');
+        }
+      } catch (e) {
+        print('DEBUG: Error during data pull: $e');
       }
       
       // Get pending items
@@ -182,6 +282,8 @@ class SyncManager {
         whereArgs: ['pending', 5],
         orderBy: 'priority DESC, created_at ASC',
       );
+      
+      print('DEBUG: Found ${pendingItems.length} pending items to sync');
       
       if (pendingItems.isEmpty) {
         _updateStatus(SyncStatus.idle);
@@ -208,6 +310,7 @@ class SyncManager {
           );
         } catch (e) {
           failed++;
+          print('DEBUG: Sync error for item ${item['id']}: $e');
           // Increment retry count
           final syncAttempts = (item['sync_attempts'] as int? ?? 0) + 1;
           
@@ -233,7 +336,7 @@ class SyncManager {
           'Sync complete: $processed synced, $failed failed');
       
     } catch (e) {
-      print('Sync error: $e');
+      print('DEBUG: Sync error: $e');
       _updateStatus(SyncStatus.error);
     } finally {
       _isSyncing = false;
@@ -245,6 +348,8 @@ class SyncManager {
     final tableName = item['table_name'];
     final operationType = item['operation_type'];
     final recordData = item['record_data'] != null ? jsonDecode(item['record_data']) : null;
+    
+    print('DEBUG: Syncing $operationType for $tableName with data: $recordData');
     
     switch (tableName) {
       case 'inspections':

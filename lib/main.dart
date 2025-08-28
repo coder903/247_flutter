@@ -35,6 +35,14 @@ void main() async {
     // Initialize sync manager
     await SyncManager.instance.initialize();
     print('Sync manager initialized successfully');
+    
+    // Perform initial sync when app starts
+    SyncManager.instance.syncNow().then((_) {
+      print('Initial sync completed');
+    }).catchError((error) {
+      print('Initial sync error: $error');
+      // App can still function in offline mode
+    });
   } catch (e) {
     print('Failed to initialize sync manager: $e');
     // App can still run in offline mode
@@ -94,6 +102,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _initializeAuth() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     await authService.loadStoredAuth();
+    
+    // If user is authenticated, trigger a sync
+    if (authService.isAuthenticated) {
+      SyncManager.instance.syncNow().then((_) {
+        print('Post-authentication sync completed');
+      }).catchError((error) {
+        print('Post-authentication sync error: $error');
+      });
+    }
+    
     if (mounted) {
       setState(() => _isInitialized = true);
     }

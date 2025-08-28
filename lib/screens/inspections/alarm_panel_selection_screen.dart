@@ -43,13 +43,18 @@ class _AlarmPanelSelectionScreenState extends State<AlarmPanelSelectionScreen> {
     setState(() => _isLoading = true);
     
     try {
+      print('DEBUG: Loading properties for inspection screen');
+      
       // Get alarmPanels needing inspection
       final needingAnnual = await _alarmPanelRepo.getPropertiesNeedingInspection(
         inspectionType: 'Annual',
       );
+      print('DEBUG: Found ${needingAnnual.length} properties needing annual inspection');
+      
       final needingSemiAnnual = await _alarmPanelRepo.getPropertiesNeedingInspection(
         inspectionType: 'Semi-Annual',
       );
+      print('DEBUG: Found ${needingSemiAnnual.length} properties needing semi-annual inspection');
       
       // Combine and deduplicate
       final Map<int, Map<String, dynamic>> needingInspectionMap = {};
@@ -69,9 +74,11 @@ class _AlarmPanelSelectionScreenState extends State<AlarmPanelSelectionScreen> {
       }
       
       _alarmPanelsNeedingInspection = needingInspectionMap.values.toList();
+      print('DEBUG: Combined ${_alarmPanelsNeedingInspection.length} properties needing inspection');
       
       // Get all alarmPanels with details
       final allPropsReadOnly = await _alarmPanelRepo.getPropertiesWithDetails();
+      print('DEBUG: Found ${allPropsReadOnly.length} total properties with details');
       
       // Convert to mutable maps and add device counts
       _allProperties = [];
@@ -81,6 +88,11 @@ class _AlarmPanelSelectionScreenState extends State<AlarmPanelSelectionScreen> {
         final deviceCount = await _alarmPanelRepo.getDeviceCount(prop['id']);
         mutableProp['device_count'] = deviceCount;
         _allProperties.add(mutableProp);
+      }
+      
+      print('DEBUG: Final properties count: ${_allProperties.length}');
+      if (_allProperties.isNotEmpty) {
+        print('DEBUG: First property: ${_allProperties.first}');
       }
       
     } catch (e) {

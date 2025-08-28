@@ -19,12 +19,12 @@ class DatabaseHelper {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, filePath);
 
-    // For the refactoring, delete the old database and start fresh
-    final file = File(path);
-    if (await file.exists()) {
-      await file.delete();
-      print('Deleted existing database for clean refactoring');
-    }
+    // Comment out database deletion - we want to keep data between app runs
+    // final file = File(path);
+    // if (await file.exists()) {
+    //   await file.delete();
+    //   print('Deleted existing database for clean refactoring');
+    // }
 
     return await openDatabase(
       path,
