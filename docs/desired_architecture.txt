@@ -1,0 +1,17 @@
+Web Admin Creates & Manages:
+├── Buildings → Sync to mobile
+├── Customers → Sync to mobile
+├── Systems/Properties → Sync to mobile
+└── Service Tickets → Sync to mobile
+
+Mobile App Creates:
+├── Devices (during site surveys) → Sync to web
+├── Inspections → Sync to web
+├── Battery Tests → Sync to web
+├── Component Tests → Sync to web
+└── Service Tickets → Sync to web
+
+Web Admin Views:
+├── All mobile-collected data
+├── Reports and analytics
+└── Public QR access (no login)

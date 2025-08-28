@@ -21,7 +21,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,  // Increment this version number
+      version: 3,  // Increment this version number
       onCreate: _createDB,
       onUpgrade: _upgradeDatabase,
       onConfigure: _onConfigure,

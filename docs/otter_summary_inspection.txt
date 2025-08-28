@@ -1,0 +1,43 @@
+﻿Inspection Report Automation Meeting
+Transcript
+https://otter.ai/u/luCKTSVGZ5e6xD3P0kCqFv70oYg?view=summary
+Sid Davis discussed the challenges of managing inspection reports and the need for automation. He described the current process of conducting site surveys, applying barcodes, and creating detailed inspection reports. Sid suggested using a retired individual to assist with job walks and data entry. He proposed digitizing inspection reports to reduce delays in billing and improve efficiency. Mike Cunningham agreed to develop a database to streamline the process, including automatic calculations for battery performance and temperature readings. They also considered integrating QR codes for secure access to inspection data and exploring APIs for seamless uploads to client websites.
+Action Items
+    • [ ] Explore creating a database-driven system to manage inspection data.
+    • [ ] Investigate the feasibility of using QR codes or barcodes to link inspection data to specific devices.
+    • [ ] Determine how to securely allow customers and inspectors to access the inspection reports.
+    • [ ] Develop a way to automatically populate battery readings and pass/fail status based on predefined thresholds.
+    • [ ] Integrate the ability to capture photos, videos, and other documentation during the inspection process.
+    • [ ] Explore the possibility of automating the generation of customized inspection reports based on the complexity of the fire alarm system.
+Outline
+Discussion on Personal Interests and Work Challenges
+    • Mike Cunningham and Sid Davis discuss their past experiences with motorcycles, including Sid’s difficulty riding due to ADHD.
+    • Sid mentions using a Pack Out as a desk and describes the challenges of installing a new panel due to poor wiring in the field.
+    • Sid explains the process of conducting site surveys, inventories, and creating proposals, emphasizing the importance of barcoding devices.
+    • Sid proposes hiring a retired person to perform job walks and apply barcodes to save costs compared to paying employees.
+Proposed Solutions for Inspection Reports
+    • Sid suggests automating inspection reports to reduce the time spent on paperwork and expedite billing.
+    • He envisions using a retired person to conduct job walks and input data into a database for efficient reporting.
+    • Sid plans to categorize devicem in inspection reps (pull stations, fire alarms, etc.) and organize theorts.
+    • He aims to simplify the inspection report format by listing batteries separately and providing a comprehensive equipment list.
+Challenges with Current Processes
+    • Sid shares his experience with using jQuery Mobile for service tickets and the challenges of maintaining compatibility with changing databases.
+    • He discusses the potential benefits of integrating AI to manage inspection reports and QR codes for quicker access.
+    • Sid highlights the need for secure access to inspection data through QR codes without compromising privacy.
+    • Mike offers suggestions on implementing login requirements and restricting access based on specific accounts or credentials.
+Exploring Database Integration and Security Measures
+    • Sid considers allowing customers and fire inspectors to view inspection reports with restricted access.
+    • He discusses the possibility of uploading photos and documents related to panels and devices during site surveys.
+    • Mike suggests using a database to store inspection data and generate PDF reports dynamically rather than manually.
+    • Sid expresses interest in eliminating manual entry of barcodes and replacing it with a digital solution for better control and accuracy.
+Detailed Walkthrough of Inspection Forms
+    • Sid provides an overview of the current inspection forms, explaining the layout and fields such as battery types, readings, and temperatures.
+    • He identifies areas for improvement, including the ability to edit or add details during site surveys.
+    • Sid requests the integration of a feature to automatically calculate battery performance based on specified criteria.
+    • Mike agrees to explore options for calculating battery performance and generating dynamic PDF reports from the database.
+Future Enhancements and Collaboration
+    • Sid outlines additional features he wants to implement, such as managing service tickets and tracking module replacements.
+    • He emphasizes the need for a user-friendly interface to allow technicians to easily update and review inspection data.
+    • Mike assures Sid that he can help design and develop the necessary tools and integrate them with existing systems.
+    • Both parties agree to continue discussing and refining the proposed solutions to meet their business needs effectively.
+

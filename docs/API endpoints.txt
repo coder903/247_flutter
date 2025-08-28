@@ -1,0 +1,752 @@
+﻿Fire Inspection API Documentation
+Base URL: /inspection-api/
+Authentication
+Most endpoints require JWT authentication. Include the access token in the Authorization header:
+Authorization: Bearer <access_token>
+Table of Contents
+    1. Authentication Endpoints 
+    2. Master Data Endpoints 
+    3. Sync Endpoints 
+    4. Device Management Endpoints 
+    5. Inspection Endpoints 
+    6. Service Ticket Endpoints 
+    7. File Upload Endpoints 
+    8. Sync Operations 
+    9. Reports & QR Access 
+    10. Utility Endpoints 
+
+Authentication Endpoints
+Login
+POST /inspection-api/auth/login
+Authenticate technician and receive JWT tokens.
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+Response (200):
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "user"
+  }
+}
+Error Responses:
+    • 400: Email and password required 
+    • 401: Invalid credentials 
+    • 403: Account is disabled 
+
+Refresh Token
+POST /inspection-api/auth/refresh
+Refresh an expired access token.
+Headers:
+Authorization: Bearer <refresh_token>
+Response (200):
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+
+Logout
+POST /inspection-api/auth/logout
+Logout (optional endpoint for token blacklisting).
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "message": "Successfully logged out"
+}
+
+Master Data Endpoints
+Get All Buildings
+GET /inspection-api/buildings
+Get all buildings/locations for mobile sync.
+Headers:
+Authorization: Bearer <access_token>
+Query Parameters:
+    • updated_since (optional): ISO 8601 timestamp (e.g., 2024-01-01T00:00:00Z) 
+Response (200):
+{
+  "buildings": [
+    {
+      "id": 1,
+      "name": "Office Building A",
+      "address": "123 Main St",
+      "address2": "Suite 100",
+      "city": "New York",
+      "state": "NY",
+      "zip_code": "10001",
+      "building_type": "commercial",
+      "building_code": "BLDG001",
+      "floors": 10,
+      "units": 50,
+      "access_notes": "Call security first",
+      "gate_code": "1234",
+      "lockbox_code": "5678",
+      "contact_name": "John Manager",
+      "contact_phone": "555-1234",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-15T00:00:00"
+    }
+  ],
+  "count": 1,
+  "timestamp": "2024-01-15T12:00:00"
+}
+
+Get All Customers
+GET /inspection-api/customers
+Get all customers for mobile sync.
+Headers:
+Authorization: Bearer <access_token>
+Query Parameters:
+    • updated_since (optional): ISO 8601 timestamp 
+Response (200):
+{
+  "customers": [
+    {
+      "id": 1,
+      "company_name": "ABC Corporation",
+      "contact_name": "Jane Smith",
+      "email": "jane@abc.com",
+      "phone": "555-5678",
+      "address": "456 Business Ave",
+      "billing_address": "456 Business Ave",
+      "portal_username": "abc_corp",
+      "portal_active": true,
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-15T00:00:00"
+    }
+  ],
+  "count": 1,
+  "timestamp": "2024-01-15T12:00:00"
+}
+
+Get All Fire Alarm Systems
+GET /inspection-api/systems
+Get all fire alarm systems (properties) for mobile sync.
+Headers:
+Authorization: Bearer <access_token>
+Query Parameters:
+    • updated_since (optional): ISO 8601 timestamp 
+Response (200):
+{
+  "systems": [
+    {
+      "id": 1,
+      "name": "Fire Alarm System - Building A",
+      "location_id": 1,
+      "customer_id": 1,
+      "panel_manufacturer": "Simplex",
+      "panel_model": "4100ES",
+      "panel_location": "1st Floor Electrical Room",
+      "voltage": 120,
+      "amps": 20,
+      "monitoring_company": "Central Station",
+      "monitoring_account": "ACC123456",
+      "monitoring_phone": "555-9999",
+      "qr_code": "FAS-ABC12345",
+      "qr_access_key": "123456",
+      "test_frequency": "Annual",
+      "last_test_date": "2023-01-15",
+      "next_test_due": "2024-01-15",
+      "specific_location": "Main panel room",
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-15T00:00:00"
+    }
+  ],
+  "count": 1,
+  "timestamp": "2024-01-15T12:00:00"
+}
+
+Get System Devices
+GET /inspection-api/systems/<system_id>/devices
+Get all devices for a specific system.
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "system_id": 1,
+  "system_name": "Fire Alarm System - Building A",
+  "devices": [
+    {
+      "id": 1,
+      "barcode": "DEV001",
+      "category": "Detection",
+      "device_type": "Smoke Detector",
+      "subtype": "Photoelectric",
+      "manufacturer": "System Sensor",
+      "model": "2400",
+      "serial_number": "SN123456",
+      "location": "Room 101",
+      "floor": 1,
+      "installation_date": "2020-01-01",
+      "last_test_date": "2023-01-15",
+      "last_test_result": "Pass",
+      "requires_replacement": false,
+      "characteristics": {
+        "sensitivity": "2.5%"
+      },
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-15T00:00:00"
+    }
+  ],
+  "count": 1
+}
+
+Sync Endpoints
+Pull Sync Data
+POST /inspection-api/sync/pull
+Pull all master data from server to mobile (initial sync or full refresh).
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "last_sync": "2024-01-01T00:00:00Z",
+  "entities": ["buildings", "customers", "systems", "devices", "tickets"]
+}
+Response (200):
+{
+  "status": "success",
+  "timestamp": "2024-01-15T12:00:00",
+  "data": {
+    "buildings": [...],
+    "customers": [...],
+    "systems": [...],
+    "devices": [...],
+    "tickets": [...]
+  },
+  "counts": {
+    "buildings": 10,
+    "customers": 5,
+    "systems": 15,
+    "devices": 150,
+    "tickets": 3
+  }
+}
+
+Sync Status
+GET /inspection-api/sync/status
+Get sync status - what data is available and when it was last updated.
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "server_time": "2024-01-15T12:00:00",
+  "entities": {
+    "buildings": {
+      "count": 10,
+      "last_updated": "2024-01-14T18:30:00"
+    },
+    "customers": {
+      "count": 5,
+      "last_updated": "2024-01-13T14:20:00"
+    },
+    "systems": {
+      "count": 15,
+      "last_updated": "2024-01-15T09:00:00"
+    }
+  }
+}
+
+Device Management Endpoints
+Get Devices
+GET /inspection-api/devices
+Get all devices with optional filters.
+Headers:
+Authorization: Bearer <access_token>
+Query Parameters:
+    • system_id (optional): Filter by system ID 
+    • category (optional): Filter by category (e.g., "smoke_detector") 
+    • updated_since (optional): ISO 8601 timestamp 
+Response (200):
+{
+  "devices": [
+    {
+      "id": 1,
+      "barcode": "DEV001",
+      "property_id": 1,
+      "category": "Detection",
+      "device_type": "Smoke Detector",
+      "subtype": "Photoelectric",
+      "manufacturer": "System Sensor",
+      "model": "2400",
+      "serial_number": "SN123456",
+      "location": "Room 101",
+      "floor": 1,
+      "installation_date": "2020-01-01",
+      "last_test_date": "2023-01-15",
+      "last_test_result": "Pass",
+      "requires_replacement": false,
+      "characteristics": {},
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-15T00:00:00"
+    }
+  ],
+  "count": 1
+}
+
+Add Device
+POST /inspection-api/devices
+Add new device (site survey mode).
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "barcode": "DEV001",
+  "system_id": 1,
+  "device_type": "Smoke Detector",
+  "category": "Detection",
+  "manufacturer": "Simplex",
+  "model": "4098-1234",
+  "location": "Room 101",
+  "installation_date": "2024-01-01"
+}
+Response (201):
+{
+  "message": "Device added successfully",
+  "device_id": 1,
+  "barcode": "DEV001"
+}
+Error Response:
+    • 409: Barcode already exists 
+
+Update Device
+PUT /inspection-api/devices/<barcode>
+Update device information.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "device_type": "Smoke Detector",
+  "category": "Detection",
+  "manufacturer": "System Sensor",
+  "model": "2400-NEW",
+  "location": "Room 102"
+}
+Response (200):
+{
+  "message": "Device updated successfully"
+}
+
+Check Barcode
+POST /inspection-api/devices/check-barcode
+Check if barcode is unique.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "barcode": "DEV001"
+}
+Response (200):
+{
+  "barcode": "DEV001",
+  "exists": false,
+  "available": true
+}
+
+Inspection Endpoints
+Create Inspection
+POST /inspection-api/inspections
+Create new inspection.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "system_id": 1,
+  "inspection_type": "Annual",
+  "inspection_date": "2024-01-15",
+  "notes": "Annual inspection"
+}
+Response (201):
+{
+  "message": "Inspection created",
+  "inspection_id": 1
+}
+
+Update Inspection
+PUT /inspection-api/inspections/<inspection_id>
+Update inspection.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "notes": "Updated notes",
+  "defects": "Minor issues found",
+  "is_complete": false
+}
+Response (200):
+{
+  "message": "Inspection updated"
+}
+
+Complete Inspection
+POST /inspection-api/inspections/<inspection_id>/complete
+Mark inspection as complete.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "passed": true,
+  "defects": "Minor issues noted"
+}
+Response (200):
+{
+  "message": "Inspection completed"
+}
+
+Submit Battery Tests
+POST /inspection-api/battery-tests
+Submit battery test results.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "inspection_id": 1,
+  "tests": [
+    {
+      "barcode": "BAT001",
+      "position": "B1",
+      "voltage_ah": 7,
+      "current_reading": 6.2,
+      "voltage_reading": 12.8,
+      "temperature_f": 72
+    }
+  ]
+}
+Response (201):
+{
+  "message": "1 battery tests saved"
+}
+
+Submit Component Tests
+POST /inspection-api/component-tests
+Submit device/component test results.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "inspection_id": 1,
+  "tests": [
+    {
+      "device_id": 1,
+      "barcode": "DEV001",
+      "test_result": "Pass",
+      "test_type": "smoke_test",
+      "test_values": {
+        "sensitivity": "2.5%",
+        "alarm_time": "15 seconds"
+      },
+      "notes": "Tested OK"
+    }
+  ]
+}
+Response (201):
+{
+  "message": "1 component tests saved"
+}
+
+Service Ticket Endpoints
+Get Tickets
+GET /inspection-api/tickets
+Get service tickets with filters.
+Headers:
+Authorization: Bearer <access_token>
+Query Parameters:
+    • status (optional): Filter by status (Open, In Progress, etc.) 
+    • system_id (optional): Filter by system ID 
+    • assigned_to (optional): Filter by assigned user ID 
+Response (200):
+{
+  "tickets": [
+    {
+      "id": 1,
+      "ticket_number": "TKT-20240115120000",
+      "system_id": 1,
+      "issue_type": "Device Failure",
+      "description": "Smoke detector not responding",
+      "status": "Open",
+      "priority": "High",
+      "created_at": "2024-01-15T12:00:00",
+      "updated_at": "2024-01-15T12:00:00"
+    }
+  ]
+}
+
+Create Ticket
+POST /inspection-api/tickets
+Create service ticket.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "system_id": 1,
+  "issue_type": "Device Failure",
+  "description": "Smoke detector not responding",
+  "priority": "High",
+  "device_barcode": "DEV001"
+}
+Response (201):
+{
+  "message": "Ticket created",
+  "ticket_id": 1,
+  "ticket_number": "TKT-20240115120000"
+}
+
+Update Ticket
+PUT /inspection-api/tickets/<ticket_id>
+Update service ticket.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "status": "In Progress",
+  "priority": "Critical",
+  "description": "Updated description",
+  "resolution_notes": "Replaced device"
+}
+Response (200):
+{
+  "message": "Ticket updated"
+}
+
+File Upload Endpoints
+Upload Photo
+POST /inspection-api/upload/photo
+Upload device/test photos.
+Headers:
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+Form Data:
+    • file: Image file (required) 
+    • type: "device" | "test" | "defect" 
+    • reference_id: Device ID or Inspection ID 
+    • barcode: Device barcode (optional) 
+    • metadata: JSON string with GPS, timestamp, etc. 
+Response (201):
+{
+  "message": "Photo uploaded successfully",
+  "filename": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6.jpg"
+}
+
+Upload Video
+POST /inspection-api/upload/video
+Upload test videos.
+Headers:
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+Form Data:
+    • file: Video file (required) 
+    • Similar fields as photo upload 
+Allowed Formats: .mp4, .mov, .avi, .mkv
+Response (201):
+{
+  "message": "Video uploaded successfully",
+  "filename": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6.mp4"
+}
+
+Upload PDF
+POST /inspection-api/upload/pdf
+Upload generated PDF reports.
+Headers:
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+Form Data:
+    • file: PDF file (required) 
+    • inspection_id: Inspection ID (required) 
+Response (201):
+{
+  "message": "PDF uploaded successfully",
+  "filename": "inspection_1_20240115_120000.pdf"
+}
+
+Sync Operations
+Check Sync Updates
+POST /inspection-api/sync/check
+Check for pending updates since timestamp.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "last_sync": "2024-01-01T00:00:00Z"
+}
+Response (200):
+{
+  "buildings": 2,
+  "customers": 0,
+  "systems": 1,
+  "devices": 5,
+  "timestamp": "2024-01-15T12:00:00"
+}
+
+Submit Batch Sync
+POST /inspection-api/sync/batch
+Submit batch of offline changes.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "inspections": [
+    {
+      "local_id": "temp_123",
+      "system_id": 1,
+      "inspection_type": "Annual",
+      "inspection_date": "2024-01-15",
+      "notes": "Offline inspection"
+    }
+  ],
+  "battery_tests": [...],
+  "component_tests": [...],
+  "devices": [...],
+  "tickets": [...]
+}
+Response (200):
+{
+  "status": "success",
+  "success": {
+    "inspections": [{"local_id": "temp_123", "server_id": 1}],
+    "battery_tests": [0, 1],
+    "component_tests": [0],
+    "devices": ["DEV001", "DEV002"],
+    "tickets": ["TKT-20240115120000"]
+  },
+  "errors": {},
+  "conflicts": []
+}
+
+Get Conflicts
+GET /inspection-api/sync/conflicts
+Get unresolved sync conflicts.
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "conflicts": [],
+  "count": 0
+}
+
+Reports & QR Access
+Get Inspection Report
+GET /inspection-api/reports/inspection/<inspection_id>
+Get inspection report data.
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "inspection": {
+    "id": 1,
+    "property_name": "Fire Alarm System - Building A",
+    "inspection_date": "2024-01-15",
+    "inspection_type": "Annual",
+    "inspector": "John Doe",
+    "passed": true,
+    "defects": null,
+    "notes": "All systems operational"
+  },
+  "battery_tests": [
+    {
+      "position": "B1",
+      "voltage_ah": 7,
+      "current_reading": 6.2,
+      "min_required": 5.95,
+      "passed": true
+    }
+  ],
+  "component_tests": [
+    {
+      "device_type": "Smoke Detector",
+      "location": "Room 101",
+      "test_result": "Pass",
+      "notes": "Tested OK"
+    }
+  ]
+}
+
+QR Code Access
+GET /inspection-api/qr/<qr_code>
+Public QR code access (no auth required).
+Query Parameters:
+    • key: Access key (required) 
+Response (200):
+{
+  "property": {
+    "name": "Fire Alarm System - Building A",
+    "address": "123 Main St"
+  },
+  "inspections": [
+    {
+      "date": "2024-01-15",
+      "type": "Annual",
+      "passed": true,
+      "inspector": "John Doe"
+    }
+  ]
+}
+Error Response:
+    • 404: Invalid QR code 
+    • 401: Access key required or invalid 
+
+Utility Endpoints
+Get Device Types
+GET /inspection-api/device-types
+Get list of device types and categories for dropdowns.
+Headers:
+Authorization: Bearer <access_token>
+Response (200):
+{
+  "categories": {
+    "Detection": ["Smoke Detector", "Heat Detector", "Duct Detector", "Beam Detector"],
+    "Notification": ["Horn/Strobe", "Strobe Only", "Horn Only", "Speaker", "Speaker/Strobe"],
+    "Control": ["Pull Station", "Control Module", "Monitor Module", "Relay Module"],
+    "Suppression": ["Sprinkler Head", "Kitchen Hood", "Clean Agent"],
+    "Fire Extinguisher": ["ABC Dry Chemical", "CO2", "Water", "K-Class"],
+    "Emergency": ["Exit Sign", "Emergency Light", "Combo Exit/Emergency"],
+    "Panel": ["Main Panel", "Annunciator", "Power Supply", "NAC Extender"]
+  }
+}
+
+Health Check
+GET /inspection-api/health
+Health check endpoint for mobile app connectivity tests.
+Response (200):
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T12:00:00",
+  "api_version": "1.0"
+}
+
+Generate Barcode
+POST /inspection-api/barcode/generate
+Generate next sequential barcode for offline use.
+Headers:
+Authorization: Bearer <access_token>
+Request Body:
+{
+  "prefix": "DEV",
+  "system_id": 1
+}
+Response (200):
+{
+  "barcode": "DEV000001",
+  "prefix": "DEV",
+  "number": 1
+}
+
+Error Response Format
+All endpoints return errors in a consistent format:
+{
+  "error": "Brief error description",
+  "message": "Detailed error message"
+}
+Common HTTP status codes:
+    • 400: Bad Request 
+    • 401: Unauthorized 
+    • 403: Forbidden 
+    • 404: Not Found 
+    • 409: Conflict 
+    • 500: Internal Server Error 
+

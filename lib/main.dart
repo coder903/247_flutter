@@ -56,17 +56,7 @@ class FireInspectionApp extends StatelessWidget {
         title: 'Fire Inspection',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        home: Consumer<AuthService>(
-          builder: (context, authService, _) {
-            // Check if we have stored auth token
-            //authService.checkStoredAuth();
-            
-            if (authService.isAuthenticated) {
-              return const HomeScreen();
-            }
-            return const LoginScreen();
-          },
-        ),
+        home: const AuthWrapper(),
         debugShowCheckedModeBanner: false,
         // Define routes
         routes: {
@@ -80,6 +70,52 @@ class FireInspectionApp extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+// Auth wrapper to handle initialization
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAuth();
+  }
+
+  Future<void> _initializeAuth() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    await authService.loadStoredAuth();
+    if (mounted) {
+      setState(() => _isInitialized = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return Consumer<AuthService>(
+      builder: (context, authService, _) {
+        if (authService.isAuthenticated) {
+          return const HomeScreen();
+        }
+        return const LoginScreen();
+      },
     );
   }
 }

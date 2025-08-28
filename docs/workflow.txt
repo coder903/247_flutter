@@ -1,0 +1,43 @@
+The images depict a workflow for inspecting and inventorying fire and safety devices within various buildings. The process seems to be performed using a Palm OS-powered handheld device, likely by technicians or inspectors.
+
+Workflow Summary
+
+The overall workflow involves several key steps:
+
+    Building Selection/Information Review: The user first selects a specific building from a list, which includes details like the building name, ID, address, city, state, and contact information. This suggests a multi-site operation where inspections are conducted across different locations.
+
+    Device Inventory/List Review: Once a building is selected, the app displays a list of fire inspection devices already recorded for that location. This list includes the device's unique "Scan #" (Device ID), Device Type, and Floor. This step allows the inspector to see what's already on record and identify devices that need inspection.
+
+    Device Type Selection: For adding new devices or perhaps filtering views, the app provides a hierarchical selection process. Users can choose a Category (e.g., Initiating, Alarm, Indicating, Auxiliary, Control, Supervisory, Monitor, Fire, Lighting, Safety, Protective) and then a more specific Device Type within that category (e.g., Smoke Detector, Emergency Light, Fire Extinguisher, Horn/Strobe, Exit Sign, Control Panel, etc.).
+
+    Device Detail and Inspection Data Entry: After selecting or identifying a device, the user accesses a detailed screen for that specific device. This is where the core inspection work happens. Fields include:
+
+        Device ID: A unique identifier for the specific device instance.
+
+        Manufacturer: The brand of the device.
+
+        Model Number: The specific model of the device.
+
+        Location: A detailed description of the device's physical location within the building (e.g., "1st East Receiving On ceiling above FACP").
+
+        Address/Addr: Possibly a more granular address or sub-location number.
+
+        Installation Date: When the device was installed.
+
+        Specific Device Attributes: This varies greatly by device type.
+
+            For Batteries: Type (Lead Acid, Sealed Lead Acid, etc.), Pre/Post Test Voltage, Rated Voltage, Amps.
+
+            For Emergency Lights/Exit Signs: Type (LED, Combination, Power Unit), 24 Hour Post Check (checkbox), Number Remote Heads.
+
+            For Smoke Detectors: Type (Photoelectric, Duct), Function (Ionization, Door Release), Sensitivity.
+
+            For Fire Extinguishers: Type (Dry Chemical), Serviced Date, Hydrostatic Test Date, Size (e.g., "20 lbs").
+
+            For Horn/Strobes: Decibel level.
+
+    Test Result Recording: For many devices, there are "Passed," "Failed," or "Other" buttons to record the outcome of an inspection or test.
+
+    Data Persistence/Synchronization: While not explicitly shown, the "Done" and "Enter" buttons, along with the "Send" option in the building list, imply that the recorded data is saved locally on the handheld device and can then be synchronized or "sent" to a central system or database.
+
+In essence, the workflow is a systematic, form-based approach for on-site data collection related to fire and safety equipment, designed for efficiency and detail recording using a portable device.

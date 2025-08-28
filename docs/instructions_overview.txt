@@ -1,0 +1,367 @@
+Mike Cunningham  0:01  
+Hey, Sid, how you doing? Hey, man,
+
+Sid Davis  0:09  
+hey, man, can you hear me? Okay, I can't hear you. Hey, Ben, all right, pretty good. Looks like you got quite the lab over there going on. Man, oh yeah, that's got a Harley too. What's that? You got a Harley?
+
+Mike Cunningham  0:23  
+I used to, all right,
+
+Mike Cunningham  0:27  
+but, uh, no, I don't, right now, do you?
+
+Sid Davis  0:29  
+No, I can't. I got ADD, man, I can't ride. Nothing, really, yeah, I'd be like, Oh, distraction, black. I'd hit somebody. Oh, man, yeah, but at least I know better. I used to have a dirt bike, but that was a long time ago too, when I lived in Vegas. But
+
+Mike Cunningham  0:47  
+yeah, I used to have a dirt bike when I was a kid. That was a lot of fun. Yeah, yeah. I didn't kill myself on it, but yeah, ditto. I hear you.
+
+Sid Davis  0:57  
+It's amazing. It's amazing that you know now we don't get to have all that fun anymore, because we're like, I don't know about that, right? We always are hesitant about it, so, right? But I, I got me, I got me a pack out, and I'm using it for a desk.
+
+Mike Cunningham  1:14  
+Okay, cool. I 3d
+
+Sid Davis  1:17  
+printed the cleats on the bottom, and then clipping on here. So all right,
+
+Mike Cunningham  1:21  
+is this your little work area? Here
+
+Sid Davis  1:24  
+it is, right now, I'm on a job. We're trying to install this panel, and it's becoming a disaster. So
+
+Mike Cunningham  1:30  
+is it the same one you were working on the other day?
+
+Sid Davis  1:34  
+Probably, yeah, yeah, yeah. So what we're finding is the wiring in the field is really bad, so the panel doesn't like it. It's a new panel and the old panel liked it, but maybe. But this one doesn't like it at all. So it's a little more challenging.
+
+Mike Cunningham  1:49  
+Yeah, imagine that rats nest you got back there.
+
+Sid Davis  1:53  
+Oh, yeah, well, yeah, that's a little bit of a wrath. And that's, that's somebody else's shit. That's not mine. My, my shits all up there. Oh, okay, right there. Yeah, that looks a lot better. Yeah, yeah, right, I know. So, so what I want to do is, is I want to figure out a way to do the inspection reports with, I don't want to say with glide or whatever, but some way, because what happens is we go out there and we do an inspection, and then there's paperwork after the fact to fill out, and it's taking time to get done, and then it therefore it takes longer to bill out, and it's hanging us up. So what? So one of the things that we do is, when we go to a job site, like when the first time we do a site survey, we walk around, we look at all the stuff, right and and depending if, if we're looking at it, or if we're like, the first time you go out there, you just kind of take a few pictures and then kind of get an idea, and then put a proposal together. But then the next time you go out you do, like, an inventory, an actual inventory, and then we put the barcodes and stuff on, right? And so what I'm thinking about doing is trying to get a like a retired gentleman that might have some free time that we can send him out to do the job walk, or to put the barcodes on cheaper than what I can pay somebody to do it, yeah. And then he can go around and go, Okay, you know, pull station here, or whatever, and do all of it. And then we take that information to split it up, because we go, okay, this is a pull station. So this is fire alarm. This is a water flow switch. This goes with the sprinklers. And here's a fire extinguisher that goes with them, or there's emergency light that goes in a different pile, or whatever, okay, and, and, and to try to do that now there's, there's different. You know, every inspection is going to be different and but some of them are really simple, like, there's just one simple panel. There's like, one smoke, one pull, one water flow and one tamper switch and maybe a horn on one thing, right? And then, and then other places, we got hundreds of devices at a property. So what we try to do then is the basic the basic one has room for, like, two batteries, right? But like, if we get to a bigger property, it might have a bunch of different power supplies, therefore more batteries. So what I try to do is, I try to make the inspection report for the Basic panel, and then, because when we test we have to test everything once a year, we only have to test the batteries
+
+Sid Davis  4:44  
+twice a year.
+
+Sid Davis  4:46  
+So basically, what I would like to do is make the inspection report like this long, right? However long, okay, then if there's more than two batteries, then the batteries are listed with the power supplies like, kind of like an equipment list. Then, then after that, all the smoke detectors and all those devices, right, with the barcodes and everything, right? Then, that way, when we do the, do the do an inspection, all the data is here in one thing, right? Yeah. Then when it's time to do the semi annual, then only thing we do is send the first pages with all the batteries. We don't have to send it remaining stuff, right? Okay, so that's kind of what I'm
+
+Mike Cunningham  5:28  
+trying to do. Do you have an inspection form you already use? Like, yeah, yeah,
+
+Sid Davis  5:33  
+okay, yeah, we do. And I think I had AI, I had aI parse it out for making it into a database, right? Okay, so I had did, I had worked with a guy before, and we used jQuery Mobile, and we did a service ticket, right? We did a service ticket, and it worked really well. The problem was I didn't have time to keep up with all the jQuery changes, and then the changes in the database, and then the next thing you know, you're out of touch because it won't work with this database or that database or whatever, right? So, right? I can, I can put that stuff together and show you and then like, and I don't know about putting it into AI, if that'll be beneficial to us or not. I don't know how to do that. Yeah. But I also want to figure out a way that, while we're in this mix, is that I could make one QR code and put it on every panel and put
+
+Sid Davis  6:31  
+like for all the reports
+
+Sid Davis  6:35  
+and then. But here's the problem now, I got to figure out when they do the QR code and go to a web page. How we going to get some, put some security in here, right? So that they can, so that they can access it, but everybody in the world is not going to be able to type in and see that information. Oh,
+
+Mike Cunningham  6:51  
+that's easy. Okay, yeah, that's dope. Alright,
+
+Sid Davis  6:56  
+alright. Well, I just trying to figure out how we're going to do it,
+
+Mike Cunningham  6:59  
+because I don't want to. So we have on the flash cap. You have, I can just put a decorator over a function that leads to the web page that says, log in, required or something. Okay,
+
+Sid Davis  7:09  
+that's fine. I mean, we could, we could use the account number that we use for monitoring, or we could use some other account number. We could
+
+Mike Cunningham  7:17  
+also assign your if you want to get more granular, we can assign your text to certain jobs, and then they will be the only ones to be able to see it. Terri, correct? But
+
+Sid Davis  7:26  
+my thought is, if I want to be able to have the customer be able to look at it, and then, let's say a fire inspector shows up, right? So he would have to enter a government email address in order to do it. But sometimes they're kind of quirky. They're like, we don't want to do it because it could be spam or hacking or whatever. Yeah, you know, they're kind of, they have different rules. And the rest of us, I guess, okay, but I just want to try to figure out how to do it, because, you know, if all those, all that data is there, it would be really beneficial to us, because then we could put the prints and all that stuff we mentioned there. We could put all the cut sheets associated with the panel there too, right? And then all of it's right there. And I don't know if this is some upsell point we could sell to the client too, I don't know, but we'll figure that
+
+Mike Cunningham  8:14  
+out. So okay, so the photo that you're talking about adding with it, that's like for the panel, right? That you're talking about the photo. Yeah. So, I mean, you mentioned earlier that you wanted the ability to add a photo somewhere. I was going to ask you about All
+
+Sid Davis  8:30  
+right, so, so let's say,
+
+Mike Cunningham  8:33  
+is that part of what you're doing right now, what you're talking about with the diagrams? I
+
+Sid Davis  8:38  
+always, I always take no when we go out and do a site survey. I always take a picture of everything, because the reason is, I have found out over time that if you have a picture itself, it's easier to sell, right? I mean, then we can say this model is obsolete and it has to get replaced with this model. Then that way we know that this model will fit with this model correctly. Okay, so, so basically, when we do a site survey, we just take tons of pictures. And so I don't know how to share my screen with you. Let's see,
+
+Mike Cunningham  9:15  
+it's the one with the up arrow square with the up arrow. Yeah,
+
+Sid Davis  9:18  
+I got you. So let's see.
+
+Sid Davis  9:23  
+This is Miro. I use this app. Let's see. Got it. So let's see here, where's it at here? Come on,
+
+Sid Davis  9:36  
+sharing the screen, but it's not letting me do nothing here. Hold on.
+
+Mike Cunningham  9:47  
+Anyway, anyway, that's kind of like,
+
+Sid Davis  9:52  
+I can't that's an ad campaign we're working on, but let's See here. I
+
+Mike Cunningham  10:08  
+God, where am I at? Here? I
+
+Sid Davis  10:27  
+All right. See this screen right here? This is all of like one property we did, and it has all these different pull stations, right? They're all gumped up or whatever. So she posted them all on here. But as you see, some of them have barcodes on them, yeah, okay. So what I want to be able to do is like, let's just say a customer emails and said, hey, something screwed up. If they send us a picture and includes a barcode, I want to be able to dump this into AI and go, oh yeah, this is from blah, blah, blah building four at this property, or whatever. That makes sense. Yeah. Okay, right? So they have a bunch of these that call have a bunch of issues, and we're using this right now, this Miro thing to where we show, okay, this is the device that's installed, and here's the replacement, right? Mm, hmm, that make sense, yeah. Okay, so that's kind of what we're doing with this. Because they, I mean, look at some of these nasty looking things.
+
+Sid Davis  11:28  
+Yeah, they're pretty gnarly.
+
+Mike Cunningham  11:31  
+So okay, so you have a list of all these devices with the associated barcodes, and then the replacement they're
+
+Sid Davis  11:41  
+on, they're on the inspection report. So let me finally okay.
+
+Sid Davis  11:58  
+So how do I
+
+Mike Cunningham  11:59  
+send you? Let me get out of this a second here. Just send it to by email. Do
+
+Mike Cunningham  12:08  
+you still have it? Hold on a second. Let me we're just
+
+Sid Davis  12:22  
+going to send you one of these inspection reports. Okay, and you can check it out.
+
+Mike Cunningham  12:30  
+Are they all pretty similar, with the same fields and everything? Yeah.
+
+Sid Davis  12:34  
+So that's what I'm saying. The first part, the first fields are the same. These are blank, so let me find The right one here. Sorry, Okay. I
+
+Sid Davis  13:00  
+i mean partisan,
+
+Sid Davis  13:27  
+so basically, what I want to do is I want to streamline this and get rid of the barcodes, if I mean not get rid of them. What I want to do is not have to enter them with, in with, via PDF, right? Want to be able to do it in a database, and then that way we have more, I think we have more control over the whole thing.
+
+Mike Cunningham  13:50  
+I can, yeah, I can. I mean, I can set you up a little database where you can enter your your devices in the barcode number, if there's,
+
+Sid Davis  13:59  
+well, let me, let me send you this. Let me find the right one here, and then I'll send it to you. And you can, you can, kind of get what I mean. And we have, we we can, we can export all of our clients out right now, and then you could have them, and then you could say, Okay, we're doing a new inspection, right? Okay?
+
+Sid Davis  14:27  
+Because we made some and we made some changes to the so the NFPA puts this out, and they say this is approved, or whatever, right? And so, but we need, we need to add stuff to them, because they don't, they miss out on some stuff, like when we have to go check do a load test on batteries, you know, yeah. And so what we found out was, you know, we have a lot of battery failures, and we have that failure because of the heat or whatever. And I had these extra when I bought these meters, those old flute 117 meter, it came with the temperature. So I'm like, Well, shit, we might as well just take a temperature reading while we're there. So as soon as you open the cabinet, you take a reading, and we put the reading down that way we can convey to the customer. Well, hell, it's 98 degrees in there all the time. No wonder the batteries failed, right? There's no air from here, nothing. So just gives us a little bit more ammo. And plus, when the guy does the test, he videos it, or takes a picture of it, right, right. Okay, what happens is, we, we we put a barcode, and we say, Okay, here's this barcode. And then we have a, what they call a booster power supply. It's just a power supply that powers more notification devices like horn strokes and stuff. And so what I would like to be able to do was, if he has that video, and he's taking video of that thing, and then, I don't know if we could get AI to read the Read the video and automatically put that temperature reading in the thing, or not associated with the barcode.
+
+Mike Cunningham  15:55  
+Maybe, maybe, maybe I'll have to look into it, right
+
+Sid Davis  15:59  
+and so, and then to do the same thing with the battery. So what happens is, usually, when you open a cabinet, there's three barcodes, there's one for the one for the device itself, and then one for each battery. And so when we do each battery, let's say it's a seven amp hour battery, right to some battery like this, right? Yeah. So it's called a seven amp hour. But the thing is, is it? It? When we check it, it has to be 85% of its value. So in other words, it ends up being like 5.65 so what I want to do is, I want to make sure that when you enter 5.67 it passes. And if it orders 5.65, or whatever lower, it automatically fails. It Okay, yeah, right, that way we can take some of the guesswork out of this stuff, and not depending on what value it is. And when we did the initial PDF, I did a drop down that had different values of the battery, but it wouldn't automatically populate that value of 85% of whatever the value of the battery is, if that makes sense,
+
+Mike Cunningham  17:06  
+okay, yeah, we can. We can work something out there too.
+
+Sid Davis  17:09  
+And I talked to a lady before that does a lot of PDFs, and she goes, Yeah, you can have Acrobat and program it so it will do a calculation, but it will only do it on a full size thing. And I'm like, well, that's kind of pointless. When you're in the field, right? It'll do the calculation on the full thing, but it won't do it on your phone. So what's producing the PDFs? We produce them and just give them to the guy in the field. Okay? Right now, but what I would just like to do is have it on an app. Like, the only reason I'm saying Glide is the only that's the only one I know right now that can do this kind of stuff, right? I mean, I used to use, like I said, jQuery Mobile, and that would kind of, you know, oh, what I
+
+Mike Cunningham  17:53  
+would consider doing is keeping all your data in the database and then generating the PDF on the fly, and then that right, you have the data in the database to do all your calculations already
+
+Sid Davis  18:06  
+correct, I agree. And so like, for example, if the battery fails, then at the bottom of the report I want to describe, you know, the code that says it has to be whatever you know, whatever the amount is to justify our failing it, if that makes sense, okay, yeah, so, like,
+
+Mike Cunningham  18:26  
+we already have a database that's capable that can hold all that,
+
+Sid Davis  18:29  
+right? I know, I know that's why I was thinking it might not be too bad to do this. And so there's several things I want to be able to do with this. And one is, I want to, I want to do the site survey right? Yeah, then I want to do the inspection report, and then maybe even do a service service ticket as well, because that all that data is the same. We just need a write up. So if somebody goes out there and they go, Oh, the doors aren't working, okay? Well, troubleshoot it, and we found it needs a module. Well, now you can say it needs this module, and you know what module it is, and then they can send that to my admin, and then the admin can order that module. And then when the module comes in, then you can kind of send them this form again, and they can correct it, right? And now, this is the one that started it. This is the one that fixed it, right. Okay, right. Yeah.
+
+Mike Cunningham  19:18  
+Okay. So your workflows, you go out there, and, you know, do side inspection, and then you expect all the batteries and everything, especially tell them what needs to be replaced. Or, yep,
+
+Sid Davis  19:30  
+okay, yep. Or, you know, we find other stuff. I mean, we test all the smoke detectors, all the pull stations, all the flashers, horns, all that stuff. Okay, we get into places like where I'm at right now, where we find a bunch of wiring situations where they're not pleasant at all, right?
+
+Sid Davis  19:48  
+Like, you know what a t tap is
+
+Mike Cunningham  19:52  
+not really,
+
+Sid Davis  19:54  
+no. T tap was three wires, right? One, two and three. Okay, that is called a star tap, which is not allowed and it's not healthy for the system. But it may work okay in the beginning, but 20 years down the line, the panel doesn't like it because it can't handle it anymore. I mean, everything's got wear and tear on it, right? So it doesn't work like it used to. Then they call me and they go, Hey, how come this thing's not working well because of the wiring is crap,
+
+Mike Cunningham  20:22  
+right?
+
+Sid Davis  20:25  
+So or or you find out something really cool, like
+
+Sid Davis  20:32  
+whole modules wrapped in a plastic bag,
+
+Sid Davis  20:36  
+wow, okay, condensation in there causing any problems, right? Anyway, that's the kind of stuff we run into. And we just want to try to figure out a way to document it and then not be knee deep in in the you know, and having to do the paperwork all the time. Okay? Let me see here. Hold on a second.
+
+Mike Cunningham  20:56  
+So I guess you need a way to, like, you produce the barcode yourself, right, and stick them on the side of the device. Yeah, do they already? They're already
+
+Sid Davis  21:05  
+there? Well, we so sometimes. So what's interesting is this, this company, the est company, that I work on, sometimes they they already have a barcode on them. Mm, hmm, okay, but, but what the problem is, is there. It's not always there, right? And so sometimes they leave it on the outside, sometimes they don't. And so I just contacted a company. There's a company called building reports. They're a big, massive monster, and they started this thing years ago. And I had the idea, but I never thought anybody would pay for it, but then apparently they will pay for it, yeah. So I just copied their barcodes because and started putting them on devices to make us look like we were big time, right? Because we were using the software, right? So I just found some company and told them what numbers I needed and rattling them off, and then they sent them to me on a roll, and that's how we go about doing it. But let me see this
+
+Mike Cunningham  22:01  
+one right here. So you have a list of the barcode numbers in the in the and the devices somewhere right,
+
+Sid Davis  22:08  
+right? So that's what I'm going to show you right now, is I'm going to send this. I'm
+
+Sid Davis  22:41  
+I'm How you been doing? Man, no, pretty good. All right, good,
+
+Mike Cunningham  23:01  
+pretty good. I kind of needed those couple of days off. Yeah,
+
+Sid Davis  23:06  
+myself, I hear you.
+
+Mike Cunningham  23:15  
+So how was that convention that you went to?
+
+Sid Davis  23:19  
+Oh, man, I always have a good time over there. It's mainly I like to walk people watch too, right? And so it's just fascinating to see everybody, you know, everybody has an idea for something, and then they kind of bring it there to show off, or try to sell it, or whatever they're doing. And I just think it's cool that they just kind of get to express yourself a certain way, right? And not really be have anybody look at it funny. I mean, out here, they don't look at it funny, but I might be in whatever size of Texas you live in, they might look at it kind of funny, right?
+
+Mike Cunningham  23:51  
+Well, they look at everything funny out here, all right, you wouldn't believe it where I'm living now, wherever I used to live around Galveston, it was okay, you know, but up here, it's like, different,
+
+Sid Davis  24:06  
+really, okay.
+
+Sid Davis  24:20  
+Yeah, I just got this pack out thing. And then then, you know, I kind of open up another can of worms over here, because now it's like, oh, now I can print all this crap out for it, right?
+
+Mike Cunningham  24:34  
+So these PDFs that you produce is that the report that you're talking about that you needs to go to the client or the whatever.
+
+Sid Davis  24:42  
+Okay, yeah, so there's a couple different things, and I didn't know if this was possible. There's a website that some of these, some of these reports, have to get uploaded to. So then that's another process we got to go to to upload them. And I don't know if there's a simpler way to do it.
+
+Mike Cunningham  24:59  
+Yeah, we can either scrape them in, or if they haven't a lot of times, they'll have an API that we can use to interface with it to make it simpler to upload.
+
+Sid Davis  25:10  
+Okay, let me I'm going to send this, I'm going to drop this in here
+
+Mike Cunningham  25:16  
+via Upwork, okay, and then,
+
+Sid Davis  25:25  
+alright, so I
+
+Sid Davis  25:29  
+sent you that PDF, and you can kind of see, so the guy was filling this out. If you go to the last page, he kind of put stuff down there, but he didn't really do it as detailed as I think he should have done it. Okay, you kind of get the idea, right. So basically, the first three or four three pages are the same. We if you scroll down on what first page down at the bottom, you see it says the battery type and stuff, batteries.
+
+Mike Cunningham  25:57  
+Yeah, yeah.
+
+Sid Davis  25:58  
+So we put the serial number in there. And then this, this b1, and 12, that's that stays the same. And then the seven is a drop down. And then you put in the reading, and then the current reading, and then the temperature, and then you say, if it failed or not. And then the panel, the panel, the type of panel that it's connected to right. And then, if you scroll down, like some of the stuff doesn't, once you get all this thing entered, the only thing that's going to change, really is the date and the dates on it, and this battery reading, and then whether it passes or fails, like on the last couple pages, if you go to page four, what we did there was, those are all the initiation devices that are connected to this panel, okay, okay. And then, if you go to the next page, these are all the in the indicating devices that are tied to the panel, okay. They're the ones that make noise or flash, and the ones before, the ones that make it make noise or fly, or, you know, got it Okay, initiating and indicating, okay, and, and usually there should be another list, probably called control, which are all the stuff in between, like the stuff You would control, the doors to drop or, or sometimes there's a module to tell the horns to come on, or something like that, right? Yeah,
+
+Mike Cunningham  27:28  
+that would be the page like before, page four.
+
+Sid Davis  27:32  
+No, that's just a those are just so we have the initiation, and then we have the indicating, so you You're either the device is like a pull station, and then the panel tells something to turn on. But sometimes we use a module to turn it on, and not just the panel. So we will, we would log that. Sometimes we log that module in there too, but it's not on this list. This is just a basic list I see. Okay, and so this is kind of a unique situation. There's no sprinklers here, and there's only horns on these units. You see what all those things say, six something, and they go down to like 654, or whatever. So all those are units, and all those have a mini horn in them, and he didn't put the module, the model number of the horn in here, like he should have, and that's why I think that once we if, if we have a guy go out there and do a site survey, then all this other data that's blank will be filled in already, right? Okay, and then, but we still need an opportunity to be able to edit or add to it. Like, let's say the guy goes out there and he finds something that's hidden that the other guy didn't find, or whatever you need to be able to add to it, okay, yeah, just to, yeah, right. And so like out of control, or maybe find another booster panel that has to add more batteries, and then you have to add more barcodes or
+
+Sid Davis  28:48  
+whatever.
+
+Mike Cunningham  28:49  
+But do they ever need the ability to delete it? Or just no
+
+Sid Davis  28:57  
+what I would probably do is give them the opportunity to flag it, but not delete it. Can we do that? Yeah, because I agree. So you got to have some kind of control over you. Don't want some guy, some pissed off employer employee, going out there and deleting everything out of all your programs,
+
+Mike Cunningham  29:11  
+right? Okay,
+
+Mike Cunningham  29:15  
+yeah, we call that. That's basic. What we call crud. I don't know that before. Let's create, read, update and delete.
+
+Mike Cunningham  29:37  
+But in your case, what's
+
+Sid Davis  29:39  
+that? Are you at home? Are you in a shop? Uh, kind of both.
+
+Mike Cunningham  29:46  
+This is a room in my home, okay,
+
+Mike Cunningham  29:56  
+my wife calls it the dungeon,
+
+Sid Davis  29:58  
+yeah. Well, you know, I just put a I just put my buddy moved in with some lady, and I had asked for his couch for a long time. It's one of like a smoker's lounge couch. It's big, wide, all distressed leather, right? Yeah, and my wife doesn't like it, but it's in my man cave, so it doesn't really matter. But I think she doesn't like it because I go, What do you don't you like about it? She goes, I go, Oh, it's seasoned, meaning my friend probably had a lot of women over there, and that's why she doesn't like it.
+
+Mike Cunningham  30:32  
+That sounds about right? Yeah, right.
+
+Sid Davis  30:42  
+All right, so that's, that's basically, that's the, that's one of the smaller type of inspections that we do. Okay, it's not the smallest, but it's one of the smaller ones.
+
+Mike Cunningham  30:54  
+Well, do you want to, I mean, you want to capable of doing the larger ones, I guess, as well, you know, right, right? But
+
+Sid Davis  31:01  
+I'm just trying to start with something right now to get it, get the ball rolling, and then make some changes. I did do a, I don't know if I did this in I
+
+Sid Davis  31:23  
+what else I can uh, I'll
+
+Sid Davis  31:54  
+probably have to get back to you on some of this. I mean, you can mock some of this stuff up, right? Oh yeah, yeah, definitely. All right. So you kind of get the gist of it. That's the basic form. So the form will you will use, will be the basic, the first three pages, or whatever. Yeah, right. That's the core of the whole thing.
+
+Sid Davis  32:11  
+Okay, right? And so,
+
+Mike Cunningham  32:16  
+yeah, that's pretty straightforward,
+
+Sid Davis  32:17  
+right? And so some of this stuff I blocked off because, like, if we never do it, then it's like, what's the point of having it on there? Right, right? So,
+
+Mike Cunningham  32:31  
+so what do not want on there?
+
+Sid Davis  32:34  
+Well, we want all, all the what's on here. Have already modified it. But one other thing I don't like about it is. So I spoke to that lady that did PDFs, and she when we made these PDFs where you could edit them, I didn't know that the smallest typeface that Adobe could use was a certain height, so that's why these are all weird, okay, and but I didn't know that before
+
+Mike Cunningham  32:56  
+these will just, it'll just be like a form. So you're not going to be editing a PDF. You'll just be getting a form, and then you create the PDF after with the data that you put in. That's fine, I agree. And then that way you're talking about doing that in math with the batteries or whatever.
+
+Mike Cunningham  33:16  
+You'll have that data in the database and not on a form
+
+Sid Davis  33:19  
+somewhere, right? We just have a list of all the batteries somewhere else, and we can change the or add to them correct, yeah. And then what will happen is, when we go in here and do a new one, and we go in here and put the voltage where the drop down is, it'll automatically put, like, right next to that. Could we put the minimum current reading right next to it? Yeah,
+
+Sid Davis  33:39  
+right. Okay, cool.
+
+Mike Cunningham  33:49  
+Yeah, all right, cool, man, no problem.
+
+Mike Cunningham  33:56  
+That's That's quite a bit to get started on, so I figured
+
+Sid Davis  33:59  
+just hit me back when you need some if you have a questions or whatever, and then I'm sure I will, yeah, oh yeah, I know you will. It's all right. I get it. All right. All right, man, all right. Appreciate it, man. Thank you very much.
+
+Mike Cunningham  34:11  
+Thank you. Bye.
+
+Transcribed by https://otter.ai
