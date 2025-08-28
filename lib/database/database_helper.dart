@@ -19,9 +19,16 @@ class DatabaseHelper {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, filePath);
 
+    // For the refactoring, delete the old database and start fresh
+    final file = File(path);
+    if (await file.exists()) {
+      await file.delete();
+      print('Deleted existing database for clean refactoring');
+    }
+
     return await openDatabase(
       path,
-      version: 3,  // Increment this version number
+      version: 5,  // Increment this version number
       onCreate: _createDB,
       onUpgrade: _upgradeDatabase,
       onConfigure: _onConfigure,
@@ -48,6 +55,52 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE inspections ADD COLUMN battery_passed INTEGER DEFAULT 0');
       await db.execute('ALTER TABLE inspections ADD COLUMN component_count INTEGER DEFAULT 0');
       await db.execute('ALTER TABLE inspections ADD COLUMN component_passed INTEGER DEFAULT 0');
+    }
+    
+    if (oldVersion < 4) {
+      // Rename properties table to alarm_panels and update references
+      // Drop and recreate all tables to ensure clean schema
+      await db.execute('DROP TABLE IF EXISTS component_tests');
+      await db.execute('DROP TABLE IF EXISTS battery_tests');
+      await db.execute('DROP TABLE IF EXISTS service_tickets');
+      await db.execute('DROP TABLE IF EXISTS inspections');
+      await db.execute('DROP TABLE IF EXISTS devices');
+      await db.execute('DROP TABLE IF EXISTS properties');
+      await db.execute('DROP TABLE IF EXISTS customers');
+      await db.execute('DROP TABLE IF EXISTS buildings');
+      await db.execute('DROP TABLE IF EXISTS sync_queue');
+      await db.execute('DROP TABLE IF EXISTS device_subtypes');
+      await db.execute('DROP TABLE IF EXISTS manufacturers');
+      await db.execute('DROP TABLE IF EXISTS device_types');
+      await db.execute('DROP TABLE IF EXISTS device_categories');
+      
+      // Recreate all tables with new schema
+      await _createTables(db);
+      await _insertDefaultData(db);
+    }
+    
+    if (oldVersion < 5) {
+      // Drop and recreate all tables to fix any remaining issues
+      await db.execute('DROP TABLE IF EXISTS sync_metadata');
+      await db.execute('DROP TABLE IF EXISTS component_tests');
+      await db.execute('DROP TABLE IF EXISTS battery_tests');
+      await db.execute('DROP TABLE IF EXISTS service_tickets');
+      await db.execute('DROP TABLE IF EXISTS inspections');
+      await db.execute('DROP TABLE IF EXISTS devices');
+      await db.execute('DROP TABLE IF EXISTS alarmPanels');
+      await db.execute('DROP TABLE IF EXISTS alarm_panels');
+      await db.execute('DROP TABLE IF EXISTS properties');
+      await db.execute('DROP TABLE IF EXISTS customers');
+      await db.execute('DROP TABLE IF EXISTS buildings');
+      await db.execute('DROP TABLE IF EXISTS sync_queue');
+      await db.execute('DROP TABLE IF EXISTS device_subtypes');
+      await db.execute('DROP TABLE IF EXISTS manufacturers');
+      await db.execute('DROP TABLE IF EXISTS device_types');
+      await db.execute('DROP TABLE IF EXISTS device_categories');
+      
+      // Recreate all tables with new schema
+      await _createTables(db);
+      await _insertDefaultData(db);
     }
   }
 
@@ -114,9 +167,9 @@ class DatabaseHelper {
       )
     ''');
 
-    // Properties
+    // Alarm Panels
     await db.execute('''
-      CREATE TABLE properties (
+      CREATE TABLE alarmPanels (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         server_id INTEGER UNIQUE,
         name TEXT NOT NULL,
@@ -189,7 +242,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         server_id INTEGER UNIQUE,
         barcode TEXT UNIQUE NOT NULL,
-        property_id INTEGER NOT NULL,
+        alarm_panel_id INTEGER NOT NULL,
         device_type_id INTEGER NOT NULL,
         manufacturer_id INTEGER,
         model_number TEXT,
@@ -207,7 +260,7 @@ class DatabaseHelper {
         updated_at TEXT DEFAULT (datetime('now')),
         sync_status TEXT DEFAULT 'pending',
         deleted INTEGER DEFAULT 0,
-        FOREIGN KEY (property_id) REFERENCES properties(id),
+        FOREIGN KEY (alarm_panel_id) REFERENCES alarmPanels(id),
         FOREIGN KEY (device_type_id) REFERENCES device_types(id),
         FOREIGN KEY (manufacturer_id) REFERENCES manufacturers(id),
         FOREIGN KEY (subtype_id) REFERENCES device_subtypes(id)
@@ -219,7 +272,7 @@ class DatabaseHelper {
       CREATE TABLE inspections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         server_id INTEGER UNIQUE,
-        property_id INTEGER NOT NULL,
+        alarm_panel_id INTEGER NOT NULL,
         inspector_name TEXT,
         inspector_user_id INTEGER,
         start_datetime TEXT,
@@ -240,7 +293,7 @@ class DatabaseHelper {
         updated_at TEXT DEFAULT (datetime('now')),
         sync_status TEXT DEFAULT 'pending',
         deleted INTEGER DEFAULT 0,
-        FOREIGN KEY (property_id) REFERENCES properties(id)
+        FOREIGN KEY (alarm_panel_id) REFERENCES alarmPanels(id)
       )
     ''');
 
@@ -302,7 +355,7 @@ class DatabaseHelper {
       CREATE TABLE service_tickets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         server_id INTEGER UNIQUE,
-        property_id INTEGER NOT NULL,
+        alarm_panel_id INTEGER NOT NULL,
         ticket_number TEXT UNIQUE,
         issue_description TEXT,
         troubleshooting_notes TEXT,
@@ -314,7 +367,7 @@ class DatabaseHelper {
         completed_at TEXT,
         sync_status TEXT DEFAULT 'pending',
         deleted INTEGER DEFAULT 0,
-        FOREIGN KEY (property_id) REFERENCES properties(id)
+        FOREIGN KEY (alarm_panel_id) REFERENCES alarmPanels(id)
       )
     ''');
 
@@ -338,8 +391,8 @@ class DatabaseHelper {
     // Create indexes
     await db.execute('CREATE INDEX idx_buildings_sync ON buildings(sync_status)');
     await db.execute('CREATE INDEX idx_devices_barcode ON devices(barcode)');
-    await db.execute('CREATE INDEX idx_devices_property ON devices(property_id)');
-    await db.execute('CREATE INDEX idx_inspections_property ON inspections(property_id)');
+    await db.execute('CREATE INDEX idx_devices_alarm_panel ON devices(alarm_panel_id)');
+    await db.execute('CREATE INDEX idx_inspections_alarm_panel ON inspections(alarm_panel_id)');
     await db.execute('CREATE INDEX idx_battery_tests_inspection ON battery_tests(inspection_id)');
     await db.execute('CREATE INDEX idx_component_tests_inspection ON component_tests(inspection_id)');
     await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(sync_status, priority)');

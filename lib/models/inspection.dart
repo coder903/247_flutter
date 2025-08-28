@@ -3,7 +3,7 @@
 import 'base_model.dart';
 
 class Inspection extends BaseModel {
-  final int propertyId;
+  final int alarmPanelId;
   final String? inspectorName;
   final int? inspectorUserId;
   final DateTime? startDatetime;
@@ -28,7 +28,7 @@ class Inspection extends BaseModel {
   Inspection({
     super.id,
     super.serverId,
-    required this.propertyId,
+    required this.alarmPanelId,
     this.inspectorName,
     this.inspectorUserId,
     this.startDatetime,
@@ -65,7 +65,7 @@ class Inspection extends BaseModel {
     return Inspection(
       id: map['id'] as int?,
       serverId: map['server_id'] as int?,
-      propertyId: map['property_id'] as int,
+      alarmPanelId: map['alarm_panel_id'] as int,
       inspectorName: map['inspector_name'] as String?,
       inspectorUserId: map['inspector_user_id'] as int?,
       startDatetime: BaseModel.parseDateTime(map['start_datetime'] as String?),
@@ -94,7 +94,7 @@ class Inspection extends BaseModel {
     return {
       if (id != null) 'id': id,
       if (serverId != null) 'server_id': serverId,
-      'property_id': propertyId,
+      'alarm_panel_id': alarmPanelId,
       'inspector_name': inspectorName,
       'inspector_user_id': inspectorUserId,
       'start_datetime': BaseModel.formatDateTime(startDatetime),
@@ -122,7 +122,7 @@ class Inspection extends BaseModel {
   Inspection copyWith({
     int? id,
     int? serverId,
-    int? propertyId,
+    int? alarmPanelId,
     String? inspectorName,
     int? inspectorUserId,
     DateTime? startDatetime,
@@ -147,7 +147,7 @@ class Inspection extends BaseModel {
     return Inspection(
       id: id ?? this.id,
       serverId: serverId ?? this.serverId,
-      propertyId: propertyId ?? this.propertyId,
+      alarmPanelId: alarmPanelId ?? this.alarmPanelId,
       inspectorName: inspectorName ?? this.inspectorName,
       inspectorUserId: inspectorUserId ?? this.inspectorUserId,
       startDatetime: startDatetime ?? this.startDatetime,

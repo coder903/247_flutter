@@ -2,7 +2,7 @@
 
 import 'base_repository.dart';
 import '../models/building.dart';
-import '../models/property.dart';
+import '../models/alarm_panel.dart';
 import '../database/database_helper.dart';
 
 class BuildingRepository extends BaseRepository<Building> {
@@ -68,12 +68,12 @@ class BuildingRepository extends BaseRepository<Building> {
     }).toList();
   }
   
-  /// Get buildings with properties count
-  Future<List<Map<String, dynamic>>> getBuildingsWithPropertyCount() async {
+  /// Get buildings with alarmPanels count
+  Future<List<Map<String, dynamic>>> getBuildingsWithAlarmPanelCount() async {
     const sql = '''
       SELECT b.*, COUNT(p.id) as property_count
       FROM buildings b
-      LEFT JOIN properties p ON b.id = p.building_id AND p.deleted = 0
+      LEFT JOIN alarm_panels p ON b.id = p.building_id AND p.deleted = 0
       WHERE b.deleted = 0
       GROUP BY b.id
       ORDER BY b.building_name ASC
@@ -82,17 +82,17 @@ class BuildingRepository extends BaseRepository<Building> {
     return rawQuery(sql);
   }
   
-  /// Get all properties for a building
-  Future<List<Property>> getProperties(int buildingId) async {
+  /// Get all alarmPanels for a building
+  Future<List<AlarmPanel>> getProperties(int buildingId) async {
     final db = await DatabaseHelper.instance.database;
     final maps = await db.query(
-      'properties',
+      'alarmPanels',
       where: 'building_id = ? AND deleted = 0',
       whereArgs: [buildingId],
       orderBy: 'name ASC',
     );
     
-    return maps.map((map) => Property.fromMap(map)).toList();
+    return maps.map((map) => AlarmPanel.fromMap(map)).toList();
   }
   
   /// Check if building code exists
@@ -116,8 +116,8 @@ class BuildingRepository extends BaseRepository<Building> {
     const sql = '''
       SELECT DISTINCT b.*, MAX(i.inspection_date) as last_inspection_date
       FROM buildings b
-      INNER JOIN properties p ON b.id = p.building_id
-      INNER JOIN inspections i ON p.id = i.property_id
+      INNER JOIN alarm_panels p ON b.id = p.building_id
+      INNER JOIN inspections i ON p.id = i.alarm_panel_id
       WHERE b.deleted = 0 
         AND p.deleted = 0 
         AND i.deleted = 0

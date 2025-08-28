@@ -121,7 +121,7 @@ class SyncQueue {
     final tableMap = {
       'buildings': 'Building',
       'customers': 'Customer',
-      'properties': 'System',
+      'alarmPanels': 'System',
       'devices': 'Device',
       'inspections': 'Inspection',
       'battery_tests': 'Battery Test',

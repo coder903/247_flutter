@@ -167,11 +167,11 @@ class _DevTestScreenState extends State<DevTestScreen> {
       final customers = await CustomerRepository().getAll();
       _log('Customers: ${customers.length}');
       
-      final properties = await PropertyRepository().getAll();
-      _log('Systems: ${properties.length}');
+      final alarmPanels = await AlarmPanelRepository().getAll();
+      _log('Systems: ${alarmPanels.length}');
       
-      if (properties.isNotEmpty) {
-        _log('First system: ${properties.first.name}');
+      if (alarmPanels.isNotEmpty) {
+        _log('First system: ${alarmPanels.first.name}');
       }
     } catch (e) {
       _log('❌ Error: $e');

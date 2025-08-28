@@ -1,4 +1,4 @@
-// lib/screens/properties/property_add_edit_screen.dart
+// lib/screens/alarm_panels/alarm_panel_add_edit_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,12 +6,12 @@ import '../../models/models.dart';
 import '../../repositories/repositories.dart';
 import '../../services/barcode_scanner_service.dart';
 
-class PropertyAddEditScreen extends StatefulWidget {
-  final Property? property;
+class AlarmPanelAddEditScreen extends StatefulWidget {
+  final AlarmPanel? property;
   final int? buildingId;
   final int? customerId;
   
-  const PropertyAddEditScreen({
+  const AlarmPanelAddEditScreen({
     super.key,
     this.property,
     this.buildingId,
@@ -19,12 +19,12 @@ class PropertyAddEditScreen extends StatefulWidget {
   });
 
   @override
-  State<PropertyAddEditScreen> createState() => _PropertyAddEditScreenState();
+  State<AlarmPanelAddEditScreen> createState() => _AlarmPanelAddEditScreenState();
 }
 
-class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
+class _AlarmPanelAddEditScreenState extends State<AlarmPanelAddEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  final PropertyRepository _propertyRepo = PropertyRepository();
+  final AlarmPanelRepository _alarmPanelRepo = AlarmPanelRepository();
   final BuildingRepository _buildingRepo = BuildingRepository();
   final CustomerRepository _customerRepo = CustomerRepository();
   
@@ -113,7 +113,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
         }
         
         // Generate QR code for new property
-        _qrCodeController.text = await _propertyRepo.generateUniqueQrCode();
+        _qrCodeController.text = await _alarmPanelRepo.generateUniqueQrCode();
       }
       
       setState(() => _isLoading = false);
@@ -127,7 +127,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
     }
   }
 
-  void _populateForm(Property property) {
+  void _populateForm(AlarmPanel property) {
     _nameController.text = property.name;
     _accountNumberController.text = property.accountNumber ?? '';
     _specificLocationController.text = property.specificLocation ?? '';
@@ -184,7 +184,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
 
   Future<void> _generateNewQrCode() async {
     try {
-      final newCode = await _propertyRepo.generateUniqueQrCode();
+      final newCode = await _alarmPanelRepo.generateUniqueQrCode();
       setState(() {
         _qrCodeController.text = newCode;
       });
@@ -198,7 +198,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
     }
   }
 
-  Future<void> _saveProperty() async {
+  Future<void> _saveAlarmPanel() async {
     if (!_formKey.currentState!.validate()) return;
     
     // Check required relationships
@@ -221,7 +221,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
     try {
       // Check if QR code is unique (if changed)
       if (widget.property == null || widget.property!.qrCode != _qrCodeController.text) {
-        final exists = await _propertyRepo.qrCodeExists(_qrCodeController.text);
+        final exists = await _alarmPanelRepo.qrCodeExists(_qrCodeController.text);
         if (exists) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('This QR code is already in use')),
@@ -231,7 +231,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
         }
       }
       
-      final property = Property(
+      final property = AlarmPanel(
         id: widget.property?.id,
         buildingId: _selectedBuilding!.id,
         customerId: _selectedCustomer!.id,
@@ -258,14 +258,14 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
       );
       
       if (widget.property == null) {
-        await _propertyRepo.insert(property);
+        await _alarmPanelRepo.insert(property);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('System created successfully')),
           );
         }
       } else {
-        await _propertyRepo.update(property);
+        await _alarmPanelRepo.update(property);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('System updated successfully')),
@@ -685,7 +685,7 @@ class _PropertyAddEditScreenState extends State<PropertyAddEditScreen> {
             
             // Save Button
             ElevatedButton(
-              onPressed: _isSaving ? null : _saveProperty,
+              onPressed: _isSaving ? null : _saveAlarmPanel,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),

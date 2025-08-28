@@ -16,12 +16,12 @@ import 'component_test_list_screen.dart';
 
 class BatteryTestScreen extends StatefulWidget {
   final Inspection inspection;
-  final String propertyName;
+  final String alarmPanelName;
 
   const BatteryTestScreen({
     super.key,
     required this.inspection,
-    required this.propertyName,
+    required this.alarmPanelName,
   });
 
   @override
@@ -125,7 +125,7 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
   Future<void> _takeBatteryPhoto() async {
     final photoPath = await CameraService.takePhoto(
       context: context,
-      propertyId: widget.inspection.propertyId.toString(),
+      alarmPanelId: widget.inspection.alarmPanelId.toString(),
       deviceType: 'Battery',
       barcode: _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
     );
@@ -141,7 +141,7 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
   Future<void> _takeBatteryVideo() async {
     final videoPath = await CameraService.takeVideo(
       context: context,
-      propertyId: widget.inspection.propertyId.toString(),
+      alarmPanelId: widget.inspection.alarmPanelId.toString(),
       deviceType: 'Battery',
       barcode: _barcodeController.text.isNotEmpty ? _barcodeController.text : null,
     );
@@ -224,7 +224,7 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
       MaterialPageRoute(
         builder: (context) => ComponentTestListScreen(  // <- Make sure it says ComponentTestListScreen, not ComponentTestScreen
           inspection: widget.inspection,
-          propertyName: widget.propertyName,
+          alarmPanelName: widget.alarmPanelName,
         ),
       ),
     );
@@ -248,13 +248,13 @@ class _BatteryTestScreenState extends State<BatteryTestScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // Property info bar
+                // AlarmPanel info bar
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   color: Theme.of(context).primaryColor.withOpacity(0.1),
                   child: Text(
-                    widget.propertyName,
+                    widget.alarmPanelName,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),

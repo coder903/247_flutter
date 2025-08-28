@@ -50,7 +50,7 @@ class ComponentTestRepository extends BaseRepository<ComponentTest> {
     if (propertyId != null) {
       where += ''' AND inspection_id IN (
         SELECT id FROM inspections 
-        WHERE property_id = ? AND deleted = 0
+        WHERE alarm_panel_id = ? AND deleted = 0
       )''';
       whereArgs.add(propertyId);
     }
@@ -210,7 +210,7 @@ class ComponentTestRepository extends BaseRepository<ComponentTest> {
       FROM component_tests ct
       INNER JOIN devices d ON ct.device_id = d.id
       INNER JOIN device_types dt ON d.device_type_id = dt.id
-      INNER JOIN properties p ON d.property_id = p.id
+      INNER JOIN alarm_panels p ON d.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       WHERE ct.deleted = 0 
         AND d.deleted = 0

@@ -1,4 +1,4 @@
-// lib/screens/properties/building_list_screen.dart
+// lib/screens/alarmPanels/building_list_screen.dart
 
 import 'package:flutter/material.dart';
 import '../../models/building.dart';

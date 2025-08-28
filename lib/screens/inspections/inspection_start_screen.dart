@@ -2,22 +2,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../repositories/property_repository.dart';
+import '../../repositories/alarm_panel_repository.dart';
 import '../../repositories/inspection_repository.dart';
-import '../../models/property.dart';
+import '../../models/alarm_panel.dart';
 import '../../models/inspection.dart';
 import '../../services/auth_service.dart';
 import '../../config/constants.dart';
 import 'battery_test_screen.dart';
 
 class InspectionStartScreen extends StatefulWidget {
-  final int propertyId;
-  final String propertyName;
+  final int alarmPanelId;
+  final String alarmPanelName;
 
   const InspectionStartScreen({
     super.key,
-    required this.propertyId,
-    required this.propertyName,
+    required this.alarmPanelId,
+    required this.alarmPanelName,
   });
 
   @override
@@ -25,13 +25,13 @@ class InspectionStartScreen extends StatefulWidget {
 }
 
 class _InspectionStartScreenState extends State<InspectionStartScreen> {
-  final PropertyRepository _propertyRepo = PropertyRepository();
+  final AlarmPanelRepository _alarmPanelRepo = AlarmPanelRepository();
   final InspectionRepository _inspectionRepo = InspectionRepository();
   
   final _temperatureController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   
-  Property? _property;
+  AlarmPanel? _property;
   Map<String, dynamic>? _propertyDetails;
   Map<String, dynamic>? _lastInspectionStats;
   bool _isLoading = true;
@@ -40,7 +40,7 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPropertyDetails();
+    _loadAlarmPanelDetails();
   }
 
   @override
@@ -49,16 +49,16 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
     super.dispose();
   }
 
-  Future<void> _loadPropertyDetails() async {
+  Future<void> _loadAlarmPanelDetails() async {
     setState(() => _isLoading = true);
     
     try {
       // Load property details
-      _property = await _propertyRepo.getById(widget.propertyId);
-      _propertyDetails = await _propertyRepo.getPropertyWithRelatedData(widget.propertyId);
+      _property = await _alarmPanelRepo.getById(widget.alarmPanelId);
+      _propertyDetails = await _alarmPanelRepo.getAlarmPanelWithRelatedData(widget.alarmPanelId);
       
       // Get last inspection stats
-      final lastInspection = await _inspectionRepo.getLatestForProperty(widget.propertyId);
+      final lastInspection = await _inspectionRepo.getLatestForAlarmPanel(widget.alarmPanelId);
       if (lastInspection != null) {
         _lastInspectionStats = await _inspectionRepo.getInspectionStats(lastInspection.id!);
       }
@@ -96,7 +96,7 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
       
       // Create new inspection
       final inspection = await _inspectionRepo.startInspection(
-        propertyId: widget.propertyId,
+        alarmPanelId: widget.alarmPanelId,
         inspectorName: inspectorName,
         inspectorUserId: int.tryParse(authService.userId ?? ''),
         inspectionType: _selectedInspectionType,
@@ -114,7 +114,7 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
         MaterialPageRoute(
           builder: (context) => BatteryTestScreen(
             inspection: inspection,
-            propertyName: widget.propertyName,
+            alarmPanelName: widget.alarmPanelName,
           ),
         ),
       );
@@ -144,7 +144,7 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Property info card
+                    // AlarmPanel info card
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -152,7 +152,7 @@ class _InspectionStartScreenState extends State<InspectionStartScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.propertyName,
+                              widget.alarmPanelName,
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

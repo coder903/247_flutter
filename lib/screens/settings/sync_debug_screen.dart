@@ -5,7 +5,7 @@ import '../../services/sync_manager.dart';
 import '../../config/app_config.dart';
 import '../../repositories/building_repository.dart';
 import '../../repositories/customer_repository.dart';
-import '../../repositories/property_repository.dart';
+import '../../repositories/alarm_panel_repository.dart';
 
 class SyncDebugScreen extends StatefulWidget {
   const SyncDebugScreen({Key? key}) : super(key: key);
@@ -240,10 +240,10 @@ class _SyncDebugScreenState extends State<SyncDebugScreen> {
         _log('  First: ${customers.first.name}');
       }
       
-      final properties = await PropertyRepository().getAll();
-      _log('Systems in DB: ${properties.length}');
-      if (properties.isNotEmpty) {
-        _log('  First: ${properties.first.name}');
+      final alarmPanels = await AlarmPanelRepository().getAll();
+      _log('Systems in DB: ${alarmPanels.length}');
+      if (alarmPanels.isNotEmpty) {
+        _log('  First: ${alarmPanels.first.name}');
       }
     } catch (e) {
       _log('❌ Database error: $e');

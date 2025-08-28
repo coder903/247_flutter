@@ -2,7 +2,7 @@ import 'base_model.dart';
 
 class Device extends BaseModel {
   final String barcode;
-  final int propertyId;
+  final int alarmPanelId;
   final int deviceTypeId;
   final int? manufacturerId;
   final String? modelNumber;
@@ -21,7 +21,7 @@ class Device extends BaseModel {
     super.id,
     super.serverId,
     required this.barcode,
-    required this.propertyId,
+    required this.alarmPanelId,
     required this.deviceTypeId,
     this.manufacturerId,
     this.modelNumber,
@@ -52,7 +52,7 @@ class Device extends BaseModel {
       id: map['id'] as int?,
       serverId: map['server_id'] as int?,
       barcode: map['barcode'] as String,
-      propertyId: map['property_id'] as int,
+      alarmPanelId: map['alarm_panel_id'] as int,
       deviceTypeId: map['device_type_id'] as int,
       manufacturerId: map['manufacturer_id'] as int?,
       modelNumber: map['model_number'] as String?,
@@ -79,7 +79,7 @@ class Device extends BaseModel {
       if (id != null) 'id': id,
       if (serverId != null) 'server_id': serverId,
       'barcode': barcode,
-      'property_id': propertyId,
+      'alarm_panel_id': alarmPanelId,
       'device_type_id': deviceTypeId,
       'manufacturer_id': manufacturerId,
       'model_number': modelNumber,
@@ -105,7 +105,7 @@ class Device extends BaseModel {
     int? id,
     int? serverId,
     String? barcode,
-    int? propertyId,
+    int? alarmPanelId,
     int? deviceTypeId,
     int? manufacturerId,
     String? modelNumber,
@@ -128,7 +128,7 @@ class Device extends BaseModel {
       id: id ?? this.id,
       serverId: serverId ?? this.serverId,
       barcode: barcode ?? this.barcode,
-      propertyId: propertyId ?? this.propertyId,
+      alarmPanelId: alarmPanelId ?? this.alarmPanelId,
       deviceTypeId: deviceTypeId ?? this.deviceTypeId,
       manufacturerId: manufacturerId ?? this.manufacturerId,
       modelNumber: modelNumber ?? this.modelNumber,

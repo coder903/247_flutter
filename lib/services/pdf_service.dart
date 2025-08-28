@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import '../models/inspection.dart';
-import '../models/property.dart';
+import '../models/alarm_panel.dart';
 import '../models/battery_test.dart';
 import '../models/component_test.dart';
 import '../models/device.dart';
@@ -17,7 +17,7 @@ import '../repositories/inspection_repository.dart';
 import '../repositories/battery_test_repository.dart';
 import '../repositories/component_test_repository.dart';
 import '../repositories/device_repository.dart';
-import '../repositories/property_repository.dart';
+import '../repositories/alarm_panel_repository.dart';
 import '../repositories/building_repository.dart';
 import '../repositories/customer_repository.dart';
 import '../database/database_helper.dart';
@@ -30,7 +30,7 @@ class PDFService {
   final _batteryRepo = BatteryTestRepository();
   final _componentRepo = ComponentTestRepository();
   final _deviceRepo = DeviceRepository();
-  final _propertyRepo = PropertyRepository();
+  final _alarmPanelRepo = AlarmPanelRepository();
   final _buildingRepo = BuildingRepository();
   final _customerRepo = CustomerRepository();
   final _db = DatabaseHelper.instance;
@@ -41,7 +41,7 @@ class PDFService {
     final inspection = await _inspectionRepo.getById(inspectionId);
     if (inspection == null) throw Exception('Inspection not found');
 
-    final property = await _propertyRepo.getById(inspection.propertyId);
+    final property = await _alarmPanelRepo.getById(inspection.alarmPanelId);
     if (property == null) throw Exception('Property not found');
 
     final building = property.buildingId != null 

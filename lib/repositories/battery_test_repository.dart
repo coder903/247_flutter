@@ -75,7 +75,7 @@ class BatteryTestRepository extends BaseRepository<BatteryTest> {
     if (propertyId != null) {
       where += ''' AND inspection_id IN (
         SELECT id FROM inspections 
-        WHERE property_id = ? AND deleted = 0
+        WHERE alarm_panel_id = ? AND deleted = 0
       )''';
       whereArgs.add(propertyId);
     }
@@ -103,7 +103,7 @@ class BatteryTestRepository extends BaseRepository<BatteryTest> {
         b.building_name
       FROM battery_tests bt
       INNER JOIN inspections i ON bt.inspection_id = i.id
-      INNER JOIN properties p ON i.property_id = p.id
+      INNER JOIN alarm_panels p ON i.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       WHERE bt.deleted = 0 AND i.deleted = 0
     ''';
@@ -116,7 +116,7 @@ class BatteryTestRepository extends BaseRepository<BatteryTest> {
     }
     
     if (propertyId != null) {
-      sql += ' AND i.property_id = ?';
+      sql += ' AND i.alarm_panel_id = ?';
       args.add(propertyId);
     }
     
@@ -143,7 +143,7 @@ class BatteryTestRepository extends BaseRepository<BatteryTest> {
         i.inspection_type
       FROM battery_tests bt
       INNER JOIN inspections i ON bt.inspection_id = i.id
-      WHERE i.property_id = ? 
+      WHERE i.alarm_panel_id = ? 
         AND bt.deleted = 0 
         AND i.deleted = 0
         AND i.is_complete = 1
@@ -188,7 +188,7 @@ class BatteryTestRepository extends BaseRepository<BatteryTest> {
     List<dynamic> args = [];
     
     if (propertyId != null) {
-      sql += ' AND i.property_id = ?';
+      sql += ' AND i.alarm_panel_id = ?';
       args.add(propertyId);
     }
     

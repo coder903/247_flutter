@@ -8,7 +8,7 @@ class TestDataGenerator {
   static Future<void> addTestData() async {
     final buildingRepo = BuildingRepository();
     final customerRepo = CustomerRepository();
-    final propertyRepo = PropertyRepository();
+    final alarmPanelRepo = AlarmPanelRepository();
     final deviceRepo = DeviceRepository();
     
     try {
@@ -32,7 +32,7 @@ class TestDataGenerator {
       final customer = await customerRepo.insert(Customer(
         companyName: 'Acme Properties LLC',
         contactName: 'Jane Smith',
-        email: 'jane@acmeproperties.com',
+        email: 'jane@acmealarmPanels.com',
         phone: '415-555-0200',
         billingAddress: '456 Corporate Blvd',
         billingCity: 'San Francisco',
@@ -41,8 +41,8 @@ class TestDataGenerator {
         portalAccess: true,
       ));
       
-      // Add test properties
-      final property1 = await propertyRepo.insert(Property(
+      // Add test alarmPanels
+      final property1 = await alarmPanelRepo.insert(AlarmPanel(
         name: 'Building A - Main Panel',
         buildingId: building.id,
         customerId: customer.id,
@@ -56,7 +56,7 @@ class TestDataGenerator {
         primaryAmps: 20,
       ));
       
-      final property2 = await propertyRepo.insert(Property(
+      final property2 = await alarmPanelRepo.insert(AlarmPanel(
         name: 'Building B - Secondary Panel',
         buildingId: building.id,
         customerId: customer.id,
@@ -73,7 +73,7 @@ class TestDataGenerator {
       // Add some devices to property1
       await deviceRepo.insert(Device(
         barcode: '24604830',
-        propertyId: property1.id!,
+        alarmPanelId: property1.id!,
         deviceTypeId: 5, // Horn/Strobe
         manufacturerId: 1, // System Sensor
         modelNumber: 'PC2PW',
@@ -84,7 +84,7 @@ class TestDataGenerator {
       
       await deviceRepo.insert(Device(
         barcode: '24604831',
-        propertyId: property1.id!,
+        alarmPanelId: property1.id!,
         deviceTypeId: 1, // Smoke Detector
         manufacturerId: 2, // Bosch
         modelNumber: 'D273',
@@ -113,7 +113,7 @@ class TestDataGenerator {
     await db.delete('service_tickets');
     await db.delete('inspections');
     await db.delete('devices');
-    await db.delete('properties');
+    await db.delete('alarmPanels');
     await db.delete('customers');
     await db.delete('buildings');
     await db.delete('sync_queue');

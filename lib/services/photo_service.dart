@@ -26,14 +26,14 @@ class PhotoService {
 
   /// Generate a unique filename for a photo
   static String generatePhotoFileName({
-    required String propertyId,
+    required String alarmPanelId,
     required String deviceType,
     String? barcode,
   }) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final safeDeviceType = deviceType.replaceAll(RegExp(r'[^\w\s-]'), '');
     final barcodeStr = barcode != null ? '_$barcode' : '';
-    return '${propertyId}_${safeDeviceType}${barcodeStr}_$timestamp.jpg';
+    return '${alarmPanelId}_${safeDeviceType}${barcodeStr}_$timestamp.jpg';
   }
 
   /// Save and compress a photo

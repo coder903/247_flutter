@@ -48,7 +48,7 @@ class CameraService {
   /// Take a photo
   static Future<String?> takePhoto({
     required BuildContext context,
-    required String propertyId,
+    required String alarmPanelId,
     required String deviceType,
     String? barcode,
   }) async {
@@ -93,7 +93,7 @@ class CameraService {
     if (result != null) {
       // Save and compress the photo
       final fileName = PhotoService.generatePhotoFileName(
-        propertyId: propertyId,
+        alarmPanelId: alarmPanelId,
         deviceType: deviceType,
         barcode: barcode,
       );
@@ -113,7 +113,7 @@ class CameraService {
   /// Take a video
   static Future<String?> takeVideo({
     required BuildContext context,
-    required String propertyId,
+    required String alarmPanelId,
     required String deviceType,
     String? barcode,
   }) async {
@@ -162,7 +162,7 @@ class CameraService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final safeDeviceType = deviceType.replaceAll(RegExp(r'[^\w\s-]'), '');
       final barcodeStr = barcode != null ? '_$barcode' : '';
-      final fileName = '${propertyId}_${safeDeviceType}${barcodeStr}_$timestamp.mp4';
+      final fileName = '${alarmPanelId}_${safeDeviceType}${barcodeStr}_$timestamp.mp4';
       
       // Move video to app directory
       final photoDir = await PhotoService.getPhotoDirectory();

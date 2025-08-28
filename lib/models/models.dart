@@ -4,7 +4,7 @@
 export 'base_model.dart';
 export 'building.dart';
 export 'customer.dart';
-export 'property.dart';
+export 'alarm_panel.dart';
 export 'device_references.dart';
 export 'device.dart';
 export 'inspection.dart';

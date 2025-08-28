@@ -2,7 +2,7 @@
 
 import 'base_repository.dart';
 import '../models/customer.dart';
-import '../models/property.dart';
+import '../models/alarm_panel.dart';
 import '../database/database_helper.dart';
 
 class CustomerRepository extends BaseRepository<Customer> {
@@ -54,25 +54,25 @@ class CustomerRepository extends BaseRepository<Customer> {
     );
   }
   
-  /// Get all properties for a customer
-  Future<List<Property>> getProperties(int customerId) async {
+  /// Get all alarmPanels for a customer
+  Future<List<AlarmPanel>> getProperties(int customerId) async {
     final db = await DatabaseHelper.instance.database;
     final maps = await db.query(
-      'properties',
+      'alarmPanels',
       where: 'customer_id = ? AND deleted = 0',
       whereArgs: [customerId],
       orderBy: 'name ASC',
     );
     
-    return maps.map((map) => Property.fromMap(map)).toList();
+    return maps.map((map) => AlarmPanel.fromMap(map)).toList();
   }
   
-  /// Get customers with properties count
-  Future<List<Map<String, dynamic>>> getCustomersWithPropertyCount() async {
+  /// Get customers with alarmPanels count
+  Future<List<Map<String, dynamic>>> getCustomersWithAlarmPanelCount() async {
     const sql = '''
       SELECT c.*, COUNT(p.id) as property_count
       FROM customers c
-      LEFT JOIN properties p ON c.id = p.customer_id AND p.deleted = 0
+      LEFT JOIN alarm_panels p ON c.id = p.customer_id AND p.deleted = 0
       WHERE c.deleted = 0
       GROUP BY c.id
       ORDER BY COALESCE(c.company_name, c.contact_name) ASC
@@ -88,8 +88,8 @@ class CustomerRepository extends BaseRepository<Customer> {
     const sql = '''
       SELECT DISTINCT c.*, MAX(i.inspection_date) as last_activity_date
       FROM customers c
-      INNER JOIN properties p ON c.id = p.customer_id
-      LEFT JOIN inspections i ON p.id = i.property_id AND i.deleted = 0
+      INNER JOIN alarm_panels p ON c.id = p.customer_id
+      LEFT JOIN inspections i ON p.id = i.alarm_panel_id AND i.deleted = 0
       WHERE c.deleted = 0 
         AND p.deleted = 0
         AND (i.inspection_date >= ? OR i.inspection_date IS NULL)

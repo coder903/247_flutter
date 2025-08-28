@@ -36,7 +36,7 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
   /// Get tickets by property
   Future<List<ServiceTicket>> getByProperty(int propertyId) async {
     return query(
-      where: 'property_id = ?',
+      where: 'alarm_panel_id = ?',
       whereArgs: [propertyId],
       orderBy: 'created_at DESC',
     );
@@ -83,7 +83,7 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
         c.company_name,
         c.contact_name as customer_name
       FROM service_tickets st
-      LEFT JOIN properties p ON st.property_id = p.id
+      LEFT JOIN alarm_panels p ON st.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       WHERE st.deleted = 0
@@ -97,7 +97,7 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
     }
     
     if (propertyId != null) {
-      sql += ' AND st.property_id = ?';
+      sql += ' AND st.alarm_panel_id = ?';
       args.add(propertyId);
     }
     
@@ -120,7 +120,7 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
         p.name as property_name,
         b.building_name
       FROM service_tickets st
-      LEFT JOIN properties p ON st.property_id = p.id
+      LEFT JOIN alarm_panels p ON st.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       WHERE st.deleted = 0 AND (
         st.ticket_number LIKE ? OR 
@@ -219,7 +219,7 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
     const sql = '''
       SELECT st.*
       FROM service_tickets st
-      INNER JOIN inspections i ON st.property_id = i.property_id
+      INNER JOIN inspections i ON st.alarm_panel_id = i.alarm_panel_id
       WHERE i.id = ? 
         AND st.deleted = 0
         AND ABS(julianday(st.created_at) - julianday(i.completion_datetime)) < 1
@@ -232,14 +232,14 @@ class ServiceTicketRepository extends BaseRepository<ServiceTicket> {
   
   /// Create ticket from failed test
   Future<ServiceTicket> createFromFailedTest({
-    required int propertyId,
+    required int alarmPanelId,
     required String deviceType,
     required String location,
     required String issue,
     String? partsNeeded,
   }) async {
     final ticket = ServiceTicket(
-      propertyId: propertyId,
+      alarmPanelId: alarmPanelId,
       issueDescription: 'Failed $deviceType test at $location. $issue',
       partsNeeded: partsNeeded,
       status: 'Open',

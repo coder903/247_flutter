@@ -1,4 +1,4 @@
-// lib/screens/properties/customer_list_screen.dart
+// lib/screens/alarmPanels/customer_list_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

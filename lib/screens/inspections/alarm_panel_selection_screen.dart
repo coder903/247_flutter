@@ -1,26 +1,26 @@
-// lib/screens/inspections/property_selection_screen.dart
+// lib/screens/inspections/alarm_panel_selection_screen.dart
 
 import 'package:flutter/material.dart';
-import '../../repositories/property_repository.dart';
+import '../../repositories/alarm_panel_repository.dart';
 import '../../repositories/building_repository.dart';
 import '../../repositories/customer_repository.dart';
-import '../../models/property.dart';
+import '../../models/alarm_panel.dart';
 import '../../config/constants.dart';
 import 'inspection_start_screen.dart';
 
-class PropertySelectionScreen extends StatefulWidget {
-  const PropertySelectionScreen({super.key});
+class AlarmPanelSelectionScreen extends StatefulWidget {
+  const AlarmPanelSelectionScreen({super.key});
 
   @override
-  State<PropertySelectionScreen> createState() => _PropertySelectionScreenState();
+  State<AlarmPanelSelectionScreen> createState() => _AlarmPanelSelectionScreenState();
 }
 
-class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
-  final PropertyRepository _propertyRepo = PropertyRepository();
+class _AlarmPanelSelectionScreenState extends State<AlarmPanelSelectionScreen> {
+  final AlarmPanelRepository _alarmPanelRepo = AlarmPanelRepository();
   final BuildingRepository _buildingRepo = BuildingRepository();
   final CustomerRepository _customerRepo = CustomerRepository();
   
-  List<Map<String, dynamic>> _propertiesNeedingInspection = [];
+  List<Map<String, dynamic>> _alarmPanelsNeedingInspection = [];
   List<Map<String, dynamic>> _allProperties = [];
   bool _isLoading = true;
   String _selectedFilter = 'All';
@@ -43,11 +43,11 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
     setState(() => _isLoading = true);
     
     try {
-      // Get properties needing inspection
-      final needingAnnual = await _propertyRepo.getPropertiesNeedingInspection(
+      // Get alarmPanels needing inspection
+      final needingAnnual = await _alarmPanelRepo.getPropertiesNeedingInspection(
         inspectionType: 'Annual',
       );
-      final needingSemiAnnual = await _propertyRepo.getPropertiesNeedingInspection(
+      final needingSemiAnnual = await _alarmPanelRepo.getPropertiesNeedingInspection(
         inspectionType: 'Semi-Annual',
       );
       
@@ -68,17 +68,17 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
         }
       }
       
-      _propertiesNeedingInspection = needingInspectionMap.values.toList();
+      _alarmPanelsNeedingInspection = needingInspectionMap.values.toList();
       
-      // Get all properties with details
-      final allPropsReadOnly = await _propertyRepo.getPropertiesWithDetails();
+      // Get all alarmPanels with details
+      final allPropsReadOnly = await _alarmPanelRepo.getPropertiesWithDetails();
       
       // Convert to mutable maps and add device counts
       _allProperties = [];
       for (final prop in allPropsReadOnly) {
         // Create a mutable copy of the property map
         final mutableProp = Map<String, dynamic>.from(prop);
-        final deviceCount = await _propertyRepo.getDeviceCount(prop['id']);
+        final deviceCount = await _alarmPanelRepo.getDeviceCount(prop['id']);
         mutableProp['device_count'] = deviceCount;
         _allProperties.add(mutableProp);
       }
@@ -86,7 +86,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading properties: $e')),
+          SnackBar(content: Text('Error loading alarmPanels: $e')),
         );
       }
     } finally {
@@ -97,20 +97,20 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
   }
 
   List<Map<String, dynamic>> get _filteredProperties {
-    List<Map<String, dynamic>> properties;
+    List<Map<String, dynamic>> alarmPanels;
     
     switch (_selectedFilter) {
       case 'Needs Inspection':
-        properties = _propertiesNeedingInspection;
+        alarmPanels = _alarmPanelsNeedingInspection;
         break;
       case 'All':
       default:
-        properties = _allProperties;
+        alarmPanels = _allProperties;
     }
     
-    if (_searchQuery.isEmpty) return properties;
+    if (_searchQuery.isEmpty) return alarmPanels;
     
-    return properties.where((prop) {
+    return alarmPanels.where((prop) {
       final name = (prop['name'] ?? '').toString().toLowerCase();
       final building = (prop['building_name'] ?? '').toString().toLowerCase();
       final customer = (prop['company_name'] ?? '').toString().toLowerCase();
@@ -125,7 +125,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
   }
 
   bool _propertyNeedsInspection(Map<String, dynamic> property) {
-    return _propertiesNeedingInspection.any((p) => p['id'] == property['id']);
+    return _alarmPanelsNeedingInspection.any((p) => p['id'] == property['id']);
   }
 
   @override
@@ -145,7 +145,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                     child: TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
-                        hintText: 'Search properties...',
+                        hintText: 'Search alarmPanels...',
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
@@ -193,7 +193,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                '${_propertiesNeedingInspection.length}',
+                                '${_alarmPanelsNeedingInspection.length}',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -264,14 +264,14 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                     itemCount: _filteredProperties.length,
                     itemBuilder: (context, index) {
                       final property = _filteredProperties[index];
-                      return _buildPropertyCard(property);
+                      return _buildAlarmPanelCard(property);
                     },
                   ),
                 ),
     );
   }
 
-  Widget _buildPropertyCard(Map<String, dynamic> property) {
+  Widget _buildAlarmPanelCard(Map<String, dynamic> property) {
     final needsInspection = _propertyNeedsInspection(property);
     final lastInspectionDate = property['last_inspection_date'] as String?;
     final daysSinceInspection = property['days_since_inspection'] as double?;
@@ -285,8 +285,8 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => InspectionStartScreen(
-                propertyId: property['id'],
-                propertyName: property['name'],
+                alarmPanelId: property['id'],
+                alarmPanelName: property['name'],
               ),
             ),
           );
@@ -304,7 +304,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          property['name'] ?? 'Unknown Property',
+                          property['name'] ?? 'Unknown AlarmPanel',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -343,7 +343,7 @@ class _PropertySelectionScreenState extends State<PropertySelectionScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            _propertiesNeedingInspection
+                            _alarmPanelsNeedingInspection
                                 .firstWhere((p) => p['id'] == property['id'])['needs_type'] ?? 'Inspection Due',
                             style: const TextStyle(
                               color: Colors.white,

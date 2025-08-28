@@ -8,12 +8,12 @@ import 'inspection_summary_screen.dart';
 
 class ComponentTestListScreen extends StatefulWidget {
   final Inspection inspection;
-  final String propertyName;
+  final String alarmPanelName;
 
   const ComponentTestListScreen({
     super.key,
     required this.inspection,
-    required this.propertyName,
+    required this.alarmPanelName,
   });
 
   @override
@@ -52,7 +52,7 @@ class _ComponentTestListScreenState extends State<ComponentTestListScreen> {
     try {
       // Load devices with details
       _devices = await _deviceRepo.getDevicesWithDetails(
-        propertyId: widget.inspection.propertyId,
+        propertyId: widget.inspection.alarmPanelId,
       );
       
       // Load existing tests for this inspection
@@ -184,7 +184,7 @@ class _ComponentTestListScreenState extends State<ComponentTestListScreen> {
       MaterialPageRoute(
         builder: (context) => InspectionSummaryScreen(
           inspection: widget.inspection,
-          propertyName: widget.propertyName,
+          alarmPanelName: widget.alarmPanelName,
         ),
       ),
     );
@@ -210,7 +210,7 @@ class _ComponentTestListScreenState extends State<ComponentTestListScreen> {
       ),
       body: Column(
         children: [
-          // Property info and stats
+          // AlarmPanel info and stats
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -219,7 +219,7 @@ class _ComponentTestListScreenState extends State<ComponentTestListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.propertyName,
+                  widget.alarmPanelName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),

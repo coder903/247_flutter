@@ -1,6 +1,6 @@
 import 'base_model.dart';
 
-class Property extends BaseModel {
+class AlarmPanel extends BaseModel {
   final String name;
   final int? buildingId;
   final int? customerId;
@@ -29,7 +29,7 @@ class Property extends BaseModel {
   final int overcurrentAmps;
   final String? disconnectingMeansLocation;
 
-  Property({
+  AlarmPanel({
     super.id,
     super.serverId,
     required this.name,
@@ -59,9 +59,9 @@ class Property extends BaseModel {
     super.deleted,
   });
 
-  /// Create Property from SQLite map
-  factory Property.fromMap(Map<String, dynamic> map) {
-    return Property(
+  /// Create AlarmPanel from SQLite map
+  factory AlarmPanel.fromMap(Map<String, dynamic> map) {
+    return AlarmPanel(
       id: map['id'] as int?,
       serverId: map['server_id'] as int?,
       name: map['name'] as String,
@@ -126,7 +126,7 @@ class Property extends BaseModel {
   }
 
   /// Create copy with updated fields
-  Property copyWith({
+  AlarmPanel copyWith({
     int? id,
     int? serverId,
     String? name,
@@ -155,7 +155,7 @@ class Property extends BaseModel {
     String? syncStatus,
     bool? deleted,
   }) {
-    return Property(
+    return AlarmPanel(
       id: id ?? this.id,
       serverId: serverId ?? this.serverId,
       name: name ?? this.name,
@@ -198,5 +198,5 @@ class Property extends BaseModel {
   bool get hasQrCode => qrCode != null && qrAccessKey != null;
 
   @override
-  String toString() => 'Property(id: $id, name: $name)';
+  String toString() => 'AlarmPanel(id: $id, name: $name)';
 }

@@ -5,16 +5,16 @@ import 'package:intl/intl.dart';
 import '../../models/models.dart';
 import '../../repositories/repositories.dart';
 import '../../services/pdf_service.dart';
-import '../properties/property_list_screen.dart';
+import '../alarm_panels/alarm_panel_list_screen.dart';
 
 class InspectionSummaryScreen extends StatefulWidget {
   final Inspection inspection;
-  final String propertyName;
+  final String alarmPanelName;
 
   const InspectionSummaryScreen({
     super.key,
     required this.inspection,
-    required this.propertyName,
+    required this.alarmPanelName,
   });
 
   @override
@@ -340,7 +340,7 @@ class _InspectionSummaryScreenState extends State<InspectionSummaryScreen> {
       // Navigate back to property list
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const PropertyListScreen()),
+        MaterialPageRoute(builder: (context) => const AlarmPanelListScreen()),
         (route) => false,
       );
     } catch (e) {
@@ -375,7 +375,7 @@ class _InspectionSummaryScreenState extends State<InspectionSummaryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Property info
+            // AlarmPanel info
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -383,7 +383,7 @@ class _InspectionSummaryScreenState extends State<InspectionSummaryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.propertyName,
+                      widget.alarmPanelName,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

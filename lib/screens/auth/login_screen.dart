@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth_service.dart';
 import '../../services/sync_manager.dart';
-import '../properties/property_list_screen.dart';
+import '../alarm_panels/alarm_panel_list_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const PropertyListScreen()),
+          MaterialPageRoute(builder: (_) => const AlarmPanelListScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -85,12 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
       print('DEBUG: Login success: $success');
       
       if (success) {
-        print('DEBUG: Login successful, navigating to properties screen');
+        print('DEBUG: Login successful, navigating to alarmPanels screen');
         
-        // Navigate to properties screen
+        // Navigate to alarmPanels screen
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const PropertyListScreen()),
+          MaterialPageRoute(builder: (_) => const AlarmPanelListScreen()),
         );
         
         // Force sync after 2 seconds

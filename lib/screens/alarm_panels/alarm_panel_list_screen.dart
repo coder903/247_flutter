@@ -1,26 +1,26 @@
-// lib/screens/properties/property_list_screen.dart
+// lib/screens/alarm_panels/alarm_panel_list_screen.dart
 
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../repositories/repositories.dart';
 import '../inspections/inspection_start_screen.dart';
-import 'property_add_edit_screen.dart';
+import 'alarm_panel_add_edit_screen.dart';
 import 'building_list_screen.dart';
 import 'customer_list_screen.dart';
 
-class PropertyListScreen extends StatefulWidget {
-  const PropertyListScreen({super.key});
+class AlarmPanelListScreen extends StatefulWidget {
+  const AlarmPanelListScreen({super.key});
 
   @override
-  State<PropertyListScreen> createState() => _PropertyListScreenState();
+  State<AlarmPanelListScreen> createState() => _AlarmPanelListScreenState();
 }
 
-class _PropertyListScreenState extends State<PropertyListScreen> {
-  final PropertyRepository _propertyRepo = PropertyRepository();
+class _AlarmPanelListScreenState extends State<AlarmPanelListScreen> {
+  final AlarmPanelRepository _alarmPanelRepo = AlarmPanelRepository();
   final BuildingRepository _buildingRepo = BuildingRepository();
   final InspectionRepository _inspectionRepo = InspectionRepository();
   
-  List<Map<String, dynamic>> _properties = [];
+  List<Map<String, dynamic>> _alarmPanels = [];
   bool _isLoading = true;
   String _searchQuery = '';
   final _searchController = TextEditingController();
@@ -41,12 +41,12 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     setState(() => _isLoading = true);
     
     try {
-      // Get all properties
-      final properties = await _propertyRepo.getAll();
-      _properties = [];
+      // Get all alarmPanels
+      final alarmPanels = await _alarmPanelRepo.getAll();
+      _alarmPanels = [];
       
       // Get building info and last inspection for each property
-      for (final property in properties) {
+      for (final property in alarmPanels) {
         // Get building details
         Building? building;
         if (property.buildingId != null) {
@@ -54,13 +54,13 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         }
         
         // Get last inspection
-        final inspections = await _inspectionRepo.getByProperty(property.id!);
+        final inspections = await _inspectionRepo.getByAlarmPanel(property.id!);
         final lastInspection = inspections.isNotEmpty ? inspections.first : null;
         
         // Get device count
-        final deviceCount = await _propertyRepo.getDeviceCount(property.id!);
+        final deviceCount = await _alarmPanelRepo.getDeviceCount(property.id!);
         
-        _properties.add({
+        _alarmPanels.add({
           'property': property,
           'building': building,
           'lastInspection': lastInspection,
@@ -70,25 +70,25 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       
       setState(() => _isLoading = false);
     } catch (e) {
-      print('Error loading properties: $e');
+      print('Error loading alarmPanels: $e');
       setState(() => _isLoading = false);
     }
   }
 
   List<Map<String, dynamic>> get _filteredProperties {
-    if (_searchQuery.isEmpty) return _properties;
+    if (_searchQuery.isEmpty) return _alarmPanels;
     
-    return _properties.where((data) {
-      final property = data['property'] as Property;
+    return _alarmPanels.where((data) {
+      final property = data['property'] as AlarmPanel;
       final building = data['building'] as Building?;
       
-      final propertyName = property.name.toLowerCase();
+      final alarmPanelName = property.name.toLowerCase();
       final buildingName = (building?.buildingName ?? '').toLowerCase();
       final accountNumber = (property.accountNumber ?? '').toLowerCase();
       final address = (building?.address ?? '').toLowerCase();
       final query = _searchQuery.toLowerCase();
       
-      return propertyName.contains(query) ||
+      return alarmPanelName.contains(query) ||
              buildingName.contains(query) ||
              accountNumber.contains(query) ||
              address.contains(query);
@@ -96,25 +96,25 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   }
 
   void _navigateToInspection(Map<String, dynamic> propertyData) {
-    final property = propertyData['property'] as Property;
+    final property = propertyData['property'] as AlarmPanel;
     final building = propertyData['building'] as Building?;
     
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => InspectionStartScreen(
-          propertyId: property.id!,
-          propertyName: building?.buildingName ?? property.name,
+          alarmPanelId: property.id!,
+          alarmPanelName: building?.buildingName ?? property.name,
         ),
       ),
     ).then((_) => _loadProperties()); // Reload on return
   }
 
-  void _navigateToAddProperty() async {
+  void _navigateToAddAlarmPanel() async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const PropertyAddEditScreen(),
+        builder: (context) => const AlarmPanelAddEditScreen(),
       ),
     );
     
@@ -123,11 +123,11 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     }
   }
 
-  void _navigateToEditProperty(Property property) async {
+  void _navigateToEditAlarmPanel(AlarmPanel property) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PropertyAddEditScreen(property: property),
+        builder: (context) => AlarmPanelAddEditScreen(property: property),
       ),
     );
     
@@ -136,8 +136,8 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
     }
   }
 
-  void _showPropertyOptions(Map<String, dynamic> propertyData) {
-    final property = propertyData['property'] as Property;
+  void _showAlarmPanelOptions(Map<String, dynamic> propertyData) {
+    final property = propertyData['property'] as AlarmPanel;
     
     showModalBottomSheet(
       context: context,
@@ -158,7 +158,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
               title: const Text('Edit System'),
               onTap: () {
                 Navigator.pop(context);
-                _navigateToEditProperty(property);
+                _navigateToEditAlarmPanel(property);
               },
             ),
             ListTile(
@@ -285,7 +285,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
             ),
           ),
           
-          // Property List
+          // AlarmPanel List
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -320,7 +320,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                         itemCount: filteredProperties.length,
                         itemBuilder: (context, index) {
                           final data = filteredProperties[index];
-                          final property = data['property'] as Property;
+                          final property = data['property'] as AlarmPanel;
                           final building = data['building'] as Building?;
                           final lastInspection = data['lastInspection'] as Inspection?;
                           final deviceCount = data['deviceCount'] as int;
@@ -393,7 +393,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                               ),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => _navigateToInspection(data),
-                              onLongPress: () => _showPropertyOptions(data),
+                              onLongPress: () => _showAlarmPanelOptions(data),
                             ),
                           );
                         },
@@ -402,7 +402,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddProperty,
+        onPressed: _navigateToAddAlarmPanel,
         tooltip: 'Add System',
         child: const Icon(Icons.add),
       ),

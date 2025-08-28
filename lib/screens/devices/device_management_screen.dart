@@ -30,7 +30,7 @@ class DeviceManagementScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 32),
               child: Text(
                 'This feature will allow you to:\n'
-                '• Add new devices to properties\n'
+                '• Add new devices to alarmPanels\n'
                 '• Scan/generate barcodes\n'
                 '• Bulk device entry\n'
                 '• Edit device information\n'

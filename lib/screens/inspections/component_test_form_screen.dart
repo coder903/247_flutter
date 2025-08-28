@@ -336,7 +336,7 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
   Future<void> _takePhoto() async {
     final photoPath = await CameraService.takePhoto(
       context: context,
-      propertyId: widget.inspection.propertyId.toString(),
+      alarmPanelId: widget.inspection.alarmPanelId.toString(),
       deviceType: _deviceTypeName,
       barcode: widget.device['barcode'],
     );
@@ -352,7 +352,7 @@ class _ComponentTestFormScreenState extends State<ComponentTestFormScreen> {
   Future<void> _takeVideo() async {
     final videoPath = await CameraService.takeVideo(
       context: context,
-      propertyId: widget.inspection.propertyId.toString(),
+      alarmPanelId: widget.inspection.alarmPanelId.toString(),
       deviceType: _deviceTypeName,
       barcode: widget.device['barcode'],
     );

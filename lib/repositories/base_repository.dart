@@ -166,7 +166,7 @@ abstract class BaseRepository<T extends BaseModel> {
       case 'service_tickets':
         return 8;
       case 'devices':
-      case 'properties':
+      case 'alarmPanels':
         return 6;
       case 'buildings':
       case 'customers':

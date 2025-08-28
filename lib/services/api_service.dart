@@ -344,7 +344,7 @@ class ApiService {
     }
   }
   
-  /// Get properties/systems
+  /// Get alarmPanels/systems
   Future<List<dynamic>> getSystems() async {
     try {
       final response = await get('/systems');
@@ -355,9 +355,9 @@ class ApiService {
   }
   
   /// Get devices
-  Future<List<dynamic>> getDevices({int? propertyId}) async {
+  Future<List<dynamic>> getDevices({int? alarmPanelId}) async {
     try {
-      final queryParams = propertyId != null ? {'property_id': propertyId} : null;
+      final queryParams = alarmPanelId != null ? {'alarm_panel_id': alarmPanelId} : null;
       final response = await get('/devices', queryParameters: queryParams);
       return response.data;
     } on DioException catch (e) {

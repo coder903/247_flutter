@@ -23,7 +23,7 @@ class InspectionRepository extends BaseRepository<Inspection> {
   /// Get inspections by property
   Future<List<Inspection>> getByProperty(int propertyId) async {
     return query(
-      where: 'property_id = ?',
+      where: 'alarm_panel_id = ?',
       whereArgs: [propertyId],
       orderBy: 'inspection_date DESC, created_at DESC',
     );
@@ -63,7 +63,7 @@ class InspectionRepository extends BaseRepository<Inspection> {
         b.address as building_address,
         c.company_name
       FROM inspections i
-      LEFT JOIN properties p ON i.property_id = p.id
+      LEFT JOIN alarm_panels p ON i.alarm_panel_id = p.id
       LEFT JOIN buildings b ON p.building_id = b.id
       LEFT JOIN customers c ON p.customer_id = c.id
       WHERE i.deleted = 0
@@ -101,11 +101,11 @@ class InspectionRepository extends BaseRepository<Inspection> {
     return rawQuery(sql, args);
   }
   
-  /// Get latest inspection for property
-  Future<Inspection?> getLatestForProperty(int propertyId) async {
+  /// Get latest inspection for alarm panel
+  Future<Inspection?> getLatestForAlarmPanel(int alarmPanelId) async {
     final results = await query(
-      where: 'property_id = ? AND is_complete = 1',
-      whereArgs: [propertyId],
+      where: 'alarm_panel_id = ? AND is_complete = 1',
+      whereArgs: [alarmPanelId],
       orderBy: 'inspection_date DESC',
       limit: 1,
     );
@@ -113,9 +113,18 @@ class InspectionRepository extends BaseRepository<Inspection> {
     return results.isEmpty ? null : results.first;
   }
   
+  /// Get inspections by alarm panel
+  Future<List<Inspection>> getByAlarmPanel(int alarmPanelId) async {
+    return query(
+      where: 'alarm_panel_id = ?',
+      whereArgs: [alarmPanelId],
+      orderBy: 'inspection_date DESC',
+    );
+  }
+  
   /// Start new inspection
   Future<Inspection> startInspection({
-    required int propertyId,
+    required int alarmPanelId,
     required String inspectorName,
     int? inspectorUserId,
     String? inspectionType,
@@ -124,7 +133,7 @@ class InspectionRepository extends BaseRepository<Inspection> {
     final now = DateTime.now();
     
     final inspection = Inspection(
-      propertyId: propertyId,
+      alarmPanelId: alarmPanelId,
       inspectorName: inspectorName,
       inspectorUserId: inspectorUserId,
       startDatetime: now,

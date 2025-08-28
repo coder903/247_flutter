@@ -1,7 +1,7 @@
 import 'base_model.dart';
 
 class ServiceTicket extends BaseModel {
-  final int propertyId;
+  final int alarmPanelId;
   final String? ticketNumber;
   final String? issueDescription;
   final String? troubleshootingNotes;
@@ -14,7 +14,7 @@ class ServiceTicket extends BaseModel {
   ServiceTicket({
     super.id,
     super.serverId,
-    required this.propertyId,
+    required this.alarmPanelId,
     this.ticketNumber,
     this.issueDescription,
     this.troubleshootingNotes,
@@ -34,7 +34,7 @@ class ServiceTicket extends BaseModel {
     return ServiceTicket(
       id: map['id'] as int?,
       serverId: map['server_id'] as int?,
-      propertyId: map['property_id'] as int,
+      alarmPanelId: map['alarm_panel_id'] as int,
       ticketNumber: map['ticket_number'] as String?,
       issueDescription: map['issue_description'] as String?,
       troubleshootingNotes: map['troubleshooting_notes'] as String?,
@@ -55,7 +55,7 @@ class ServiceTicket extends BaseModel {
     return {
       if (id != null) 'id': id,
       if (serverId != null) 'server_id': serverId,
-      'property_id': propertyId,
+      'alarm_panel_id': alarmPanelId,
       'ticket_number': ticketNumber,
       'issue_description': issueDescription,
       'troubleshooting_notes': troubleshootingNotes,
@@ -75,7 +75,7 @@ class ServiceTicket extends BaseModel {
   ServiceTicket copyWith({
     int? id,
     int? serverId,
-    int? propertyId,
+    int? alarmPanelId,
     String? ticketNumber,
     String? issueDescription,
     String? troubleshootingNotes,
@@ -92,7 +92,7 @@ class ServiceTicket extends BaseModel {
     return ServiceTicket(
       id: id ?? this.id,
       serverId: serverId ?? this.serverId,
-      propertyId: propertyId ?? this.propertyId,
+      alarmPanelId: alarmPanelId ?? this.alarmPanelId,
       ticketNumber: ticketNumber ?? this.ticketNumber,
       issueDescription: issueDescription ?? this.issueDescription,
       troubleshootingNotes: troubleshootingNotes ?? this.troubleshootingNotes,

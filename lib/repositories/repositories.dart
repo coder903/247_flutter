@@ -4,7 +4,7 @@
 export 'base_repository.dart';
 export 'building_repository.dart';
 export 'customer_repository.dart';
-export 'property_repository.dart';
+export 'alarm_panel_repository.dart';
 export 'device_repository.dart';
 export 'inspection_repository.dart';
 export 'battery_test_repository.dart';

@@ -46,7 +46,7 @@ class DeviceRepository extends BaseRepository<Device> {
   /// Get devices by property
   Future<List<Device>> getByProperty(int propertyId) async {
     return query(
-      where: 'property_id = ?',
+      where: 'alarm_panel_id = ?',
       whereArgs: [propertyId],
       orderBy: 'location_description ASC, barcode ASC',
     );
@@ -64,7 +64,7 @@ class DeviceRepository extends BaseRepository<Device> {
     List<dynamic> whereArgs = [deviceTypeId];
     
     if (propertyId != null) {
-      where += ' AND property_id = ?';
+      where += ' AND alarm_panel_id = ?';
       whereArgs.add(propertyId);
     }
     
@@ -81,14 +81,14 @@ class DeviceRepository extends BaseRepository<Device> {
     List<dynamic> whereArgs = [];
     
     if (propertyId != null) {
-      where += ' AND property_id = ?';
+      where += ' AND alarm_panel_id = ?';
       whereArgs.add(propertyId);
     }
     
     return query(
       where: where,
       whereArgs: whereArgs,
-      orderBy: 'property_id ASC, location_description ASC',
+      orderBy: 'alarm_panel_id ASC, location_description ASC',
     );
   }
   
@@ -119,7 +119,7 @@ class DeviceRepository extends BaseRepository<Device> {
     List<dynamic> args = [];
     
     if (propertyId != null) {
-      sql += ' AND d.property_id = ?';
+      sql += ' AND d.alarm_panel_id = ?';
       args.add(propertyId);
     }
     
@@ -159,7 +159,7 @@ class DeviceRepository extends BaseRepository<Device> {
     List<dynamic> args = [categoryId];
     
     if (propertyId != null) {
-      sql += ' AND d.property_id = ?';
+      sql += ' AND d.alarm_panel_id = ?';
       args.add(propertyId);
     }
     
@@ -181,7 +181,7 @@ class DeviceRepository extends BaseRepository<Device> {
       FROM devices d
       LEFT JOIN device_types dt ON d.device_type_id = dt.id
       LEFT JOIN manufacturers m ON d.manufacturer_id = m.id
-      LEFT JOIN properties p ON d.property_id = p.id
+      LEFT JOIN alarm_panels p ON d.alarm_panel_id = p.id
       WHERE d.deleted = 0 AND (
         d.barcode LIKE ? OR 
         d.model_number LIKE ? OR 
@@ -195,7 +195,7 @@ class DeviceRepository extends BaseRepository<Device> {
     List<dynamic> args = [searchQuery, searchQuery, searchQuery, searchQuery, searchQuery, searchQuery];
     
     if (propertyId != null) {
-      sql += ' AND d.property_id = ?';
+      sql += ' AND d.alarm_panel_id = ?';
       args.add(propertyId);
     }
     
@@ -209,7 +209,7 @@ class DeviceRepository extends BaseRepository<Device> {
     const sql = '''
       SELECT d.*
       FROM devices d
-      WHERE d.property_id = ? 
+      WHERE d.alarm_panel_id = ? 
         AND d.deleted = 0
         AND d.id NOT IN (
           SELECT device_id 
@@ -252,7 +252,7 @@ class DeviceRepository extends BaseRepository<Device> {
         SUM(CASE WHEN photo_path IS NOT NULL THEN 1 ELSE 0 END) as has_photos,
         COUNT(DISTINCT device_type_id) as device_type_count
       FROM devices
-      WHERE property_id = ? AND deleted = 0
+      WHERE alarm_panel_id = ? AND deleted = 0
     ''';
     
     final results = await rawQuery(sql, [propertyId]);
